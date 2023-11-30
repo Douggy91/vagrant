@@ -28,11 +28,13 @@ curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | apt-key add -
 
 apt-get update
-apt-get install cri-o cri-o-runc
+apt-get install cri-o cri-o-runc -y
 
+echo -e "\
+[crio.runtime]\n\
+conmon_cgroup = "pod"\n\
+cgroup_manager = "cgroupfs" > /etc/crio/crio.conf
 
-sed -i -e 's/conmon_cgroup.*/conmon_cgroup = \"pod\"' /etc/crio/crio.conf
-sed -i -e 's/cgroup_manager.*/cgroup_manager = \"cgroupfs\"' /etc/crio/crio.conf
 
 sudo systemctl daemon-reload
 sudo systemctl enable crio --now
