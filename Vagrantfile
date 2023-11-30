@@ -17,14 +17,14 @@ Vagrant.configure("2") do |config|
         end
     end
     (4..6).each do |i|
-        config.vm.define "k8s-worker#{i}" do |cfg|
+        config.vm.define "k8s-worker#{i-3}" do |cfg|
           cfg.vm.box = "generic/ubuntu2004"
             cfg.vm.provider "virtualbox" do |vbox|
-            vbox.name = "k8s-worker#{i}"
+            vbox.name = "k8s-worker#{i-3}"
                 vbox.cpus = 2
                 vbox.memory = 16384
             end
-            cfg.vm.host_name = "k8s-worker#{i}"
+            cfg.vm.host_name = "k8s-worker#{i-3}"
             cfg.vm.network "private_network", ip: "192.168.56.16#{i}"
             cfg.vm.network "forwarded_port", guest: 22, host: "3002#{i}", auto_correct: true, id: "ssh", host_ip:"0.0.0.0"
             cfg.vm.synced_folder ".", "/vagrant", disabled: true
