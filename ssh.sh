@@ -9,7 +9,7 @@ systemctl restart sshd
 echo 'alias vi=vim' >> /etc/profile
 echo "sudo su -" >> .bashrc
 
-echo "\
+echo -e "\
 192.168.56.164 k8s-worker1\n\
 192.168.56.165 k8s-worker2\n\
 192.168.56.166 k8s-worker3\n\
