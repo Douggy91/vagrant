@@ -33,5 +33,5 @@ case $HOSTNAME in
     ;;
 esac
 
-curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="${NTYPE}" sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE=${NTYPE} sh -
 mkdir -p /etc/rancher/rke2
