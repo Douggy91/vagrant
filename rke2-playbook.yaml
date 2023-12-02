@@ -1,0 +1,69 @@
+- name: rke-init
+  hosts: master
+  remote_user: root
+  tasks:
+  - name: create-config.yaml
+    file:
+      path: "/etc/rancher/rke2/config.yaml"
+      state: touch
+  - name: add content
+    blockinfile:
+      path: "/etc/rancher/rke2/config.yaml"
+      block: |
+        cni: "calico"
+        tls-san:
+          - my-kubernetes-domain.com
+          - another-kubernetes-domain.com
+  - name: rke-master-up
+    systemd:
+      name: rke2-server
+      state: started
+  - name: get token
+    shell: cat /var/lib/rancher/rke2/server/node-token
+    register: TOKEN
+  - name: making another config.yaml
+    file:
+      path: "./config.yaml"
+      state: touch
+  - name: append token content
+    blockinfile:
+      path: "./config.yaml"
+      block: |
+        token: {{ TOKEN.stdout }}
+        server: https://192.168.56.161:9345
+        cni: "calico"
+        tls-san:
+          - my-kubernetes-domain.com
+          - another-kubernetes-domain.com
+  - name: fetching config.yaml
+    fetch:
+      src: "./config.yaml"
+      dest: "./config.yaml"
+      flat: yes
+
+- name: rke2-worker-up
+  hosts: worker
+  remote_user: root
+  tasks:
+  - name: send config.yaml
+    copy:
+      src: "./config.yaml"
+      dest: "/etc/rancher/rke2/config.yaml"
+  - name: rke2-worker-init
+    systemd: rke2-agent
+    state: started
+
+- name: rke2-container-runtime-set
+  hosts: rke2-cluster
+  remote_user: root
+  tasks:
+  - name: set-runtime
+    lineinfile:
+      path: ~/.bashrc
+      line: "export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml"
+  - name: set-CRI_CONFIG
+    shell: export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml
+  - name: list crictl 
+    shell: /var/lib/rancher/rke2/bin/crictl ps -a  
+    
+    

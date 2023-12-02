@@ -1,0 +1,19 @@
+rke2-cluster:
+  children:
+    master:
+    worker:
+
+master:
+  hosts:
+    rke2-master:
+      ansible_host: 192.168.56.161
+worker:
+  hosts:    
+    rke2-worker1:
+      ansible_host: 192.168.56.162
+    rke2-worker2:
+      ansible_host: 192.168.56.163
+    rke2-worker3:
+      ansible_host: 192.168.56.164
+    rke2-worker4:
+      ansible_host: 192.168.56.165
