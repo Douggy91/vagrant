@@ -10,7 +10,7 @@ echo 'alias vi=vim' >> /etc/profile
 echo "sudo su -" >> .bashrc
 
 sudo mkdir /root/.ssh
-echo -e "192.168.56.161 rke2-master" > /etc/hosts;done
+echo -e "192.168.56.161 rke2-master" > /etc/hosts
 for i in {1..5};do nw=$((i+1));echo "192.168.56.16${nw} rke2-worker${i}" >> /etc/hosts;done
 
 if [ ! -d "/etc/ansible/" ]; then
