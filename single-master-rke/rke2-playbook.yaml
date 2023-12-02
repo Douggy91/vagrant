@@ -50,8 +50,9 @@
       src: "./config.yaml"
       dest: "/etc/rancher/rke2/config.yaml"
   - name: rke2-worker-init
-    systemd: rke2-agent
-    state: started
+    systemd: 
+      name: rke2-agent
+      state: started
 
 - name: rke2-container-runtime-set
   hosts: rke2-cluster
