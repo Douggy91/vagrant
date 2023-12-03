@@ -52,5 +52,8 @@
     shell: helm fetch metrics-server/metrics-server --untar
   - name: helm update
     shell: sed -i -e "s/defaultArgs.*/defaultArgs:\n  - --kubelet-insecure-tls/" metrics-server/values.yaml
-  - name: helm install
+  - name: metrics-server install
     shell: helm install metrics-server ./metrics-server -n kube-system
+  - name: ingress controller install
+    shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/baremetal/deploy.yaml
+    
