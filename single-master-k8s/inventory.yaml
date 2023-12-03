@@ -1,0 +1,17 @@
+k8s-cluster:
+  children:
+    master:
+    worker:
+
+master:
+  hosts:
+    k8s-master:
+      ansible_host: 192.168.56.161
+worker:
+  hosts:    
+    k8s-worker1:
+      ansible_host: 192.168.56.162
+    k8s-worker2:
+      ansible_host: 192.168.56.163
+    k8s-worker3:
+      ansible_host: 192.168.56.164

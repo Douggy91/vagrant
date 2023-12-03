@@ -1,0 +1,56 @@
+- name: k8s-init
+  hosts: master
+  remote_user: root
+  tasks:
+  - name: kubeadm init
+    shell: INIT_COMMAND=$(kubeadm init --apiserver-advertise-address=192.168.56.161 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | tail -n 2)
+  - name: create wn-init
+    file:
+      path: "./init-shell.sh"
+      state: touch
+  - name: add content
+    blockinfile:
+      path: "./init-shell.sh"
+      block: |
+        #!/usr/bin/bash
+
+        {{ INIT_COMMAND.stdout }}
+  - name: fetching file
+    fetch:
+      src: "./init-shell.sh"
+      dest: "./init-shell.sh"
+      flat: yes
+  - name: fetching kubeconfig
+    fetch:
+      src: "/etc/kubernetes/admin.conf"
+      dest: "/root/.kube/config"
+      flat: yes
+      force: yes
+  
+- name: k8s-add-wn
+  hosts: worker
+  remote_user: root
+  tasks:
+  - name: send file
+    copy:
+      src: "./init-shell.sh"
+      dest: "./init-shell.sh"
+  - name: execute shell
+    shell: source ./init-shell.sh
+
+- name: k8s-component-up
+  hosts: localhost
+  remote_user: root
+  tasks:
+  - name: cni apply
+    shell: kubectl apply - https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
+  - name: install helm
+    shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  - name: helm repo add metrics-server
+    shell: helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+  - name: helm fetching
+    shell: helm fetch metrics-server/metrics-server --untar
+  - name: helm update
+    shell: sed -i -e "s/defaultArgs.*/defaultArgs:\n  - --kubelet-insecure-tls/" metrics-server/values.yaml
+  - name: helm install
+    shell: helm install metrics-server ./metrics-server -n kube-system
