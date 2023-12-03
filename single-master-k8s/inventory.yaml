@@ -6,12 +6,12 @@ k8s-cluster:
 master:
   hosts:
     k8s-master:
-      ansible_host: 192.168.56.161
+      ansible_host: 192.168.31.161
 worker:
   hosts:    
     k8s-worker1:
-      ansible_host: 192.168.56.162
+      ansible_host: 192.168.31.162
     k8s-worker2:
-      ansible_host: 192.168.56.163
+      ansible_host: 192.168.31.163
     k8s-worker3:
-      ansible_host: 192.168.56.164
+      ansible_host: 192.168.31.164

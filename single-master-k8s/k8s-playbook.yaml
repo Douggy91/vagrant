@@ -3,7 +3,8 @@
   remote_user: root
   tasks:
   - name: kubeadm init
-    shell: INIT_COMMAND=$(kubeadm init --apiserver-advertise-address=192.168.56.161 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | tail -n 2)
+    shell: kubeadm init --apiserver-advertise-address=192.168.31.161 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | tail -n 2
+    register: INIT_COMMAND
   - name: create wn-init
     file:
       path: "./init-shell.sh"
@@ -12,8 +13,6 @@
     blockinfile:
       path: "./init-shell.sh"
       block: |
-        #!/usr/bin/bash
-
         {{ INIT_COMMAND.stdout }}
   - name: fetching file
     fetch:
@@ -36,14 +35,14 @@
       src: "./init-shell.sh"
       dest: "./init-shell.sh"
   - name: execute shell
-    shell: source ./init-shell.sh
+    shell: sh ./init-shell.sh
 
 - name: k8s-component-up
   hosts: localhost
   remote_user: root
   tasks:
   - name: cni apply
-    shell: kubectl apply - https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
+    shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
   - name: install helm
     shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
   - name: helm repo add metrics-server
