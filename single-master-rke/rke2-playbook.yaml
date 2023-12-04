@@ -2,8 +2,20 @@
   hosts: master
   remote_user: root
   tasks:
-  - name: rke-master-up
-    shell: rke2-server --node-ip 192.168.31.161 --advertise-address 192.168.31.161 --cni "calico"
+  - name: making config.yaml
+    file:
+      path: "/etc/rancher/rke2/config.yaml"
+      state: touch
+  - name: append content
+    blockinfile:
+      path: "/etc/rancher/rke2/config.yaml"
+      block: |
+        advertise-address: 192.168.31.161
+        node-ip: 192.168.31.161
+        cni: "calico"
+        tls-san:
+          - my-kubernetes-domain.com
+          - another-kubernetes-domain.com
   - name: get token
     shell: cat /var/lib/rancher/rke2/server/node-token
     register: TOKEN
