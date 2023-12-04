@@ -26,6 +26,11 @@
       src: "./config.yaml"
       dest: "./config.yaml"
       flat: yes
+  - name: get kubeconfig
+    fetch:
+      src: "/etc/rancher/rke2/rke2.yaml"
+      dest: "/root/.kube/config"
+      flat: yes
 
 - name: rke2-worker-up
   hosts: worker
@@ -52,5 +57,21 @@
     shell: export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml
   - name: list crictl 
     shell: /var/lib/rancher/rke2/bin/crictl ps -a  
-    
-    
+
+- name: rke2-component-up
+  hosts: localhost
+  tasks:
+  - name: certmanager-crd apply
+    shell: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.6/cert-manager.crds.yaml
+  - name: certmanager apply
+    shell: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.6/cert-manager.yaml
+  - name: certmanager rollout 1
+    shell: kubectl -n cert-manager rollout status deploy/cert-manager
+  - name: certmanager rollout 2
+    shell: kubectl -n cert-manager rollout status deploy/cert-manager-webhook 
+  - name: install helm
+    shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  - name: helm repo add rancher-stable   
+    shell: helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+  - name: helm install rancher-stable
+    shell: helm install rancher rancher-stable/rancher --namespace cattle-system --set hostname=192.168.31.161.nip.io --set replicas=2 --set bootstrapPassword="new1234!" --set global.cattle.psp.enabled=false
