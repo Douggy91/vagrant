@@ -10,6 +10,7 @@
     blockinfile:
       path: "/etc/rancher/rke2/config.yaml"
       block: |
+        bind-address: 192.168.31.161
         advertise-address: 192.168.31.161
         node-ip: 192.168.31.161
         cni: "calico"
