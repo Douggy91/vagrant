@@ -16,6 +16,10 @@
         tls-san:
           - my-kubernetes-domain.com
           - another-kubernetes-domain.com
+  - name: rke-master-up
+    systemd:
+      name: rke2-server
+      state: started
   - name: get token
     shell: cat /var/lib/rancher/rke2/server/node-token
     register: TOKEN
