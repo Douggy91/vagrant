@@ -30,7 +30,7 @@
       path: "./config.yaml"
       block: |
         token: {{ TOKEN.stdout }}
-        server: https://192.168.56.161:9345
+        server: https://192.168.31.161:9345
         cni: "calico"
         tls-san:
           - my-kubernetes-domain.com

@@ -15,8 +15,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDLM3XpoZ1cUoce/Zlfpz0+RbZS+Q0zMEXFt5cAKat9
 " > /root/.ssh/authorized_keys
 
 
-echo -e "192.168.56.161 rke2-master" > /etc/hosts
-for i in {1..5};do nw=$((i+1));echo "192.168.56.16${nw} rke2-worker${i}" >> /etc/hosts;done
+echo -e "192.168.31.161 rke2-master" > /etc/hosts
+for i in {1..5};do nw=$((i+1));echo "192.168.31.16${nw} rke2-worker${i}" >> /etc/hosts;done
 
 if [ ! -d "/etc/ansible/" ]; then
   mkdir -p /etc/ansible
@@ -27,7 +27,7 @@ fi
 echo -e "\
 [AnsibleGroups]\n\
 " > /etc/ansible/hosts
-for i in {1..5};do echo "192.168.56.16${i} ansible_user=root";done >> /etc/ansible/hosts
+for i in {1..5};do echo "192.168.31.16${i} ansible_user=root";done >> /etc/ansible/hosts
 
 
 echo -e "nameserver 168.126.63.1\nnameserver 8.8.8.8" > /etc/resolv.conf
