@@ -71,14 +71,12 @@
       line: "export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml"
   - name: set-CRI_CONFIG
     shell: export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml
-  - name: list crictl 
-    shell: /var/lib/rancher/rke2/bin/crictl ps -a  
 
 - name: rke2-component-up
   hosts: localhost
   tasks:
-  - name: certmanager-crd apply
-    shell: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.6/cert-manager.crds.yaml
+  - name: edit kubeconfig
+    shell: "sed -i -e 's/server:.*/server: https:\/\/192.168.31.161:9345/' /root/.kube/config"
   - name: certmanager apply
     shell: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.6/cert-manager.yaml
   - name: certmanager rollout 1
