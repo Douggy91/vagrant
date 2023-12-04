@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
             cfg.vm.provider "virtualbox" do |vbox|
             vbox.name = "k8s-worker#{i-1}"
                 vbox.cpus = 4
-                vbox.memory = 327668
+                vbox.memory = 32768
             end
             cfg.vm.host_name = "k8s-worker#{i-1}"
             cfg.vm.network "public_network", ip: "192.168.31.16#{i}", bridge: "enp3s0"
