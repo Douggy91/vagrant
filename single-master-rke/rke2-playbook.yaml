@@ -1,3 +1,19 @@
+- name: host-key
+  hosts: rke2-cluster
+  connection: local
+  serial: 1
+  gather_facts: no
+  tasks:
+  - name: gather host-key
+    command: "printf \"yes\n\" | ssh-keyscan -t ecdsa {{ ansible_host }}"
+    register: ssh_keyscan_output
+  - name: enroll
+    lineinfile:
+      create: yes
+      line: "{{ ssh_keyscan_output.stdout_lines[0] }}"
+      dest: "/root/.ssh/known_hosts"
+    delegate_to: localhost
+
 - name: rke-init
   hosts: master
   remote_user: root
