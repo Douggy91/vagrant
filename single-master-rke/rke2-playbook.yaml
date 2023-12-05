@@ -75,7 +75,7 @@
   hosts: localhost
   tasks:
   - name: edit kubeconfig
-    shell: "sed -i -e 's,server:.*,server: https://192.168.31.161:9345,' /root/.kube/config"
+    shell: "sed -i -e 's,server:.*,server: https://192.168.31.161:6443,' /root/.kube/config"
   - name: certmanager apply
     shell: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.6/cert-manager.yaml
   - name: certmanager rollout 1
