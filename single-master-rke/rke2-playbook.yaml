@@ -13,6 +13,8 @@
       line: "{{ ssh_keyscan_output.stdout_lines[0] }}"
       dest: "/root/.ssh/known_hosts"
     delegate_to: localhost
+  - name: edit dns
+    shell: "sed -i -e 's,k8s,rke2,' /etc/bind/db.nip.io"
 
 - name: rke-init
   hosts: master
