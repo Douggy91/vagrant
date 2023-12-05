@@ -5,7 +5,7 @@
   gather_facts: no
   tasks:
   - name: gather host-key
-    command: "printf \"yes\n\" | ssh-keyscan -t ecdsa {{ ansible_host }}"
+    command: "ssh-keyscan -t ecdsa {{ ansible_host }}"
     register: ssh_keyscan_output
   - name: enroll
     lineinfile:
