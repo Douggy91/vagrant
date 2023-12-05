@@ -1,3 +1,19 @@
+- name: host-key
+  hosts: k8s-cluster
+  connection: local
+  serial: 1
+  gather_facts: no
+  tasks:
+  - name: gather host-key
+    shell: ssh-keyscan -t ecdsa {{ ansible_host }}
+    register: ssh_keyscan_output
+  - name: enroll
+    lineinfile:
+      create: yes
+      line: "{{ ssh_keyscan_output.stdout_lines[0] }}"
+      dest: "/root/.ssh/known_hosts"
+    delegate_to: localhost
+
 - name: k8s-init
   hosts: master
   remote_user: root
