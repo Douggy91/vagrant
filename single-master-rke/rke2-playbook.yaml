@@ -44,7 +44,6 @@
     blockinfile:
       path: "./config.yaml"
       block: |
-        node-ip: {{ ansible_host }}
         token: {{ TOKEN.stdout }}
         server: https://192.168.31.161:9345
         cni: "calico"
@@ -70,10 +69,15 @@
     copy:
       src: "./config.yaml"
       dest: "/etc/rancher/rke2/config.yaml"
+  - name: add node-ip
+    lineinfile:
+      path: "/etc/rancher/rke2/config.yaml"
+      line: "node-ip: {{ ansible_host }}"
   - name: rke2-worker-init
     systemd: 
       name: rke2-agent
       state: started
+
 
 - name: rke2-container-runtime-set
   hosts: rke2-cluster
