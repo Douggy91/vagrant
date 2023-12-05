@@ -15,5 +15,3 @@ worker:
       ansible_host: 192.168.31.163
     rke2-worker3:
       ansible_host: 192.168.31.164
-    rke2-worker4:
-      ansible_host: 192.168.31.165
