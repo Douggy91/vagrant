@@ -10,7 +10,7 @@
     blockinfile:
       path: "/etc/rancher/rke2/config.yaml"
       block: |
-        node-ip: 192.168.31.161
+        node-ip: {{ ansible_host }}
         cni: "calico"
         tls-san:
           - my-kubernetes-domain.com
@@ -28,6 +28,7 @@
     blockinfile:
       path: "./config.yaml"
       block: |
+        node-ip: {{ ansible_host }}
         token: {{ TOKEN.stdout }}
         server: https://192.168.31.161:9345
         cni: "calico"
