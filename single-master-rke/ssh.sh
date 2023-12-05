@@ -26,8 +26,9 @@ fi
 
 echo -e "\
 [AnsibleGroups]\n\
+rke2-master\tansible_user=root@192.168.31.161
 " > /etc/ansible/hosts
-for i in {1..5};do echo "192.168.31.16${i} ansible_user=root";done >> /etc/ansible/hosts
+for i in {1..3};do nw=$(($i+1));echo "rke2-worker${i}\tansible_user=root@192.168.31.16${nw}";done >> /etc/ansible/hosts
 
 
-echo -e "nameserver 168.126.63.1\nnameserver 8.8.8.8" > /etc/resolv.conf
+echo -e "nameserver 192.168.31.160\nnameserver 168.126.63.1" > /etc/resolv.conf
