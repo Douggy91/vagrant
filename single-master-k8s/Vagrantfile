@@ -9,6 +9,8 @@ Vagrant.configure("2") do |config|
         cfg.vm.host_name = "k8s-master"
         cfg.vm.network "public_network", ip: "192.168.31.161", bridge: "enp3s0"
         cfg.vm.network "forwarded_port", guest: 22, host: "30021", auto_correct: true, id: "ssh", host_ip:"0.0.0.0"
+        cfg.vm.network "forwarded_port", guest: 80, host: "30080", auto_correct: true, id: "http", host_ip:"0.0.0.0"
+        cfg.vm.network "forwarded_port", guest: 443, host: "30443", auto_correct: true, id: "https", host_ip:"0.0.0.0"
         cfg.vm.synced_folder ".", "/vagrant", disabled: true
         cfg.vm.provision "shell", path: "ssh.sh"
         cfg.vm.provision "shell", path: "crio.sh"
