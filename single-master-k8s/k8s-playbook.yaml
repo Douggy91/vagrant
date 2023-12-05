@@ -14,7 +14,7 @@
       dest: "/root/.ssh/known_hosts"
     delegate_to: localhost
   - name: edit dns
-    shell: "sed -i -e 's,rke2,k8s," /etc/bind/db.nip.io
+    shell: "sed -i -e 's,rke2,k8s,' /etc/bind/db.nip.io"
 
 - name: k8s-init
   hosts: master
