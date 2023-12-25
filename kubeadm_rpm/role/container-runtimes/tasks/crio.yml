@@ -1,0 +1,38 @@
+---
+# tasks file for container-runtimes
+- name: copy resource
+  copy:
+    src: "{{ dist_type }}/runc.tar"
+    dest: /tmp/
+    mode: 0644
+  tags:
+    - crio
+
+- name: unarchive runc.tar
+  unarchive:
+    src: "/tmp/runc.tar"
+    dest: "/tmp/"
+    remote_src: yes
+  tags:
+    - crio
+
+- name: dpkg configure
+  shell: "dpkg --configure -a"
+  tags:
+    - crio
+
+- name: apt install
+  shell: "apt install -y /tmp/{{ item }}/*.deb"
+  with_items:
+    - 1_apt_update
+    - 2_apt_crio
+  tags:
+    - crio
+
+- name: crio enable & start
+  systemd:
+    name: crio
+    state: started
+    enabled: yes
+  tags:
+    - crio

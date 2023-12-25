@@ -1,0 +1,4 @@
+- name: install k8s master init
+  hosts: master-init
+  roles:
+    - { role: ./role/container-runtimes }

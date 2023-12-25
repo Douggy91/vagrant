@@ -1,0 +1,27 @@
+---
+# tasks file for container-runtimes
+- name: install runc
+  include_tasks: crio.yml
+  tags: 
+    - crio
+
+- name: configure Node
+  include_tasks: k8s_base.yml  
+  tags: 
+    - k8s_base
+
+- name: install kube-tools
+  include_tasks: k8s_tools.yml  
+  tags: 
+    - k8s_tools
+    - redo
+
+- name: Init kubeadm
+  include_tasks: k8s_cluster_init.yml  
+  tags: 
+    - k8s_init
+
+- name: connect kubeadm
+  include_tasks: k8s_cluster_connect.yml  
+  tags: 
+    - k8s_connect

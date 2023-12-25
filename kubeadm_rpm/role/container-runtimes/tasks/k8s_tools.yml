@@ -1,0 +1,54 @@
+---
+# tasks file for container-runtimes
+- name: copy resource
+  copy:
+    src: "{{ dist_type }}/kube_tools.tar"
+    dest: /tmp/
+    mode: 0644
+  tags:
+    - k8s_tools
+
+- name: unarchive kube_tools.tar
+  unarchive:
+    src: "/tmp/kube_tools.tar"
+    dest: "/tmp/"
+    remote_src: yes
+  tags:
+    - k8s_tools
+
+- name: dpkg configure
+  shell: "dpkg --configure -a"
+  tags:
+    - k8s_tools
+
+- name: Index *.deb file
+  find:
+    path: "/tmp/3_kube_tools"
+    file_type: file
+    patterns: "*.deb"
+  register: deb_array
+  tags:
+    - k8s_tools
+
+- name: result
+  debug:
+    msg: "{{ deb_array.files | map(attribute='path') | list }}"
+  tags:
+    - k8s_tools
+
+- name: install Deb files
+  apt:
+    deb: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ deb_array.files | map(attribute='path') | list }}"
+  tags:
+    - k8s_tools
+
+- name: kube-completion step
+  shell: |
+    kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+    echo 'alias k=kubectl' >>~/.bashrc
+    echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+  tags:
+    - k8s_tools
