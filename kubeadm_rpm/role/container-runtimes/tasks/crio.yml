@@ -31,7 +31,7 @@
 
 - name: result
   debug:
-    msg: "{{ deb_array }}"
+    msg: "{{ deb_array | map(attribute='path') | list }}"
   tags:
     - crio
     - redo
@@ -47,7 +47,7 @@
     deb: "{{ item }}"
     state: present
   with_items:
-    - "{{ deb_array.files | map(attribute='path') | list }}"
+    - "{{ deb_array | map(attribute='path') | list }}"
   tags:
     - crio
     - redo
