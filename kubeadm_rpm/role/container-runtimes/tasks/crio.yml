@@ -42,6 +42,20 @@
     - crio
     - redo
 
+- name: debug 1
+  debug:
+    msg: "{{ deb_array_1 }}"
+  tags:
+    - crio
+    - redo
+  
+- name: debug 2
+  debug:
+    msg: "{{ deb_array_2 }}"
+  tags:
+    - crio
+    - redo
+
 - name: install Deb files_1
   apt:
     deb: "{{ item }}"
