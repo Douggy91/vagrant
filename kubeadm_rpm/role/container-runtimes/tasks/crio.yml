@@ -61,7 +61,7 @@
     deb: "{{ item }}"
     state: present
   with_items:
-    - "{{ deb_array_1 | map(attribute='path') | list }}"
+    - "{{ deb_array_1.files | map(attribute='path') | list }}"
   tags:
     - crio
     - redo
@@ -71,7 +71,7 @@
     deb: "{{ item }}"
     state: present
   with_items:
-    - "{{ deb_array_2 | map(attribute='path') | list }}"
+    - "{{ deb_array_2.files | map(attribute='path') | list }}"
   tags:
     - crio
     - redo
