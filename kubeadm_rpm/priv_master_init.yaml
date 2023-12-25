@@ -2,3 +2,5 @@
   hosts: master-init
   roles:
     - { role: ./role/container-runtimes }
+  tags:
+    - k8s_init

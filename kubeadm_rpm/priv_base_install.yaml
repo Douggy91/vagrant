@@ -2,3 +2,7 @@
   hosts: all
   roles:
     - { role: ./role/container-runtimes }
+  tags:
+    - crio
+    - k8s_base
+    - k8s_tools

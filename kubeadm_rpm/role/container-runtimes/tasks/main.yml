@@ -14,7 +14,6 @@
   include_tasks: k8s_tools.yml  
   tags: 
     - k8s_tools
-    - redo
 
 - name: Init kubeadm
   include_tasks: k8s_cluster_init.yml  
