@@ -1,5 +1,5 @@
 - name: kubeadm init
-  shell: kubeadm init --control-plane-endpoint=192.168.31.160 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | tail -n 2
+  shell: kubeadm init --control-plane-endpoint=192.168.31.160 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | grep -B 2 "\-\-control\-plane"
   register: INIT_COMMAND
   tags:
     - k8s_init
@@ -16,17 +16,29 @@
   tags:
     - k8s_init
 
-- name: Save registered output to a file
+- name: Save registered output to a file -Master
   copy:
     content: "{{ CLEAN_OUT }}" 
-    dest: "/tmp/JOIN_COMMAND"
+    dest: "/tmp/JOIN_COMMAND_M"
   tags:
     - k8s_init
 
-- name: fetching file
+- name: Save registered output to a file -Worker
+  shell: 'cat "/tmp/JOIN_COMMAND" | head -n 2 > "/tmp/JOIN_COMMAND_W"'
+  tags:
+    - k8s_init
+
+- name: fetching file -Master
   fetch:
-    src: "/tmp/JOIN_COMMAND" 
-    dest: "/tmp/JOIN_COMMAND"
+    src: "/tmp/JOIN_COMMAND_M" 
+    dest: "/tmp/JOIN_COMMAND_M"
+  tags:
+    - k8s_init
+
+- name: fetching file -Worker
+  fetch:
+    src: "/tmp/JOIN_COMMAND_W" 
+    dest: "/tmp/JOIN_COMMAND_W"
   tags:
     - k8s_init
 

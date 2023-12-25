@@ -1,12 +1,12 @@
 - name: get command
   copy: 
-    src: '/tmp/JOIN_COMMAND'
-    dest: '/tmp/JOIN_COMMAND'
+    src: '/tmp/JOIN_COMMAND_M'
+    dest: '/tmp/JOIN_COMMAND_M'
   tags:
     - k8s_connect
 
 - name: kubeadm connect
-  shell: '. /tmp/JOIN_COMMAND' 
+  shell: '. /tmp/JOIN_COMMAND_M' 
   register: INIT_COMMAND
   tags:
     - k8s_connect

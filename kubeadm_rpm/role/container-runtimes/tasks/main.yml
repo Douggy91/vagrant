@@ -24,3 +24,8 @@
   include_tasks: k8s_cluster_connect.yml  
   tags: 
     - k8s_connect
+
+- name: connect worker
+  include_tasks: k8s_cluster_worker.yml 
+  tags: 
+    - k8s_worker
