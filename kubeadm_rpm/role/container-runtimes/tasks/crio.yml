@@ -16,22 +16,22 @@
   tags:
     - crio
 
-- name: Index *.deb file
+- name: Index *.deb file_1
   find:
-    path: "/{{ install_dir }}/{{ item }}"
+    path: "/{{ install_dir }}/1_apt_update"
     file_type: file
     patterns: "*.deb"
-  with_items:
-    - 1_apt_update
-    - 2_apt_crio
-  register: deb_array
+  register: deb_array_1
   tags:
     - crio
     - redo
 
-- name: result
-  debug:
-    msg: "{{ deb_array.files | map(attribute='path') | list }}"
+- name: Index *.deb file_2
+  find:
+    path: "/{{ install_dir }}/2_apt_crio"
+    file_type: file
+    patterns: "*.deb"
+  register: deb_array_2
   tags:
     - crio
     - redo
@@ -42,12 +42,22 @@
     - crio
     - redo
 
-- name: install Deb files
+- name: install Deb files_1
   apt:
     deb: "{{ item }}"
     state: present
   with_items:
-    - "{{ deb_array | map(attribute='path') | list }}"
+    - "{{ deb_array_1 | map(attribute='path') | list }}"
+  tags:
+    - crio
+    - redo
+
+- name: install Deb files_2
+  apt:
+    deb: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ deb_array_2 | map(attribute='path') | list }}"
   tags:
     - crio
     - redo
