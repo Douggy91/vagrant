@@ -3,16 +3,28 @@
 - name: copy resource
   copy:
     src: "{{ dist_type }}/runc.tar"
-    dest: /tmp/
+    dest: "/{{ install_dir }}/"
     mode: 0644
   tags:
     - crio
 
 - name: unarchive runc.tar
   unarchive:
-    src: "/tmp/runc.tar"
-    dest: "/tmp/"
+    src: "/{{ install_dir }}/runc.tar"
+    dest: "/{{ install_dir }}/"
     remote_src: yes
+  tags:
+    - crio
+
+- name: Index *.deb file
+  find:
+    path: "/{{ install_dir }}/{{ item }}"
+    file_type: file
+    patterns: "*.deb"
+  with_items:
+    - 1_apt_update
+    - 2_apt_crio
+  register: deb_array
   tags:
     - crio
 
@@ -21,11 +33,12 @@
   tags:
     - crio
 
-- name: apt install
-  shell: "apt install -y /tmp/{{ item }}/*.deb"
+- name: install Deb files
+  apt:
+    deb: "{{ item }}"
+    state: present
   with_items:
-    - 1_apt_update
-    - 2_apt_crio
+    - "{{ deb_array.files | map(attribute='path') | list }}"
   tags:
     - crio
 

@@ -1,0 +1,4 @@
+- name: install node resource
+  hosts: all
+  roles:
+    - { role: ./role/container-runtimes }
