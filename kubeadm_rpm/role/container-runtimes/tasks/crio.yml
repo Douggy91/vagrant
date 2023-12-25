@@ -31,7 +31,7 @@
 
 - name: result
   debug:
-    msg: deb_array
+    msg: "{{ deb_array }}"
   tags:
     - crio
     - redo
