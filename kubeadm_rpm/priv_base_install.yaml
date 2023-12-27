@@ -1,8 +1,5 @@
 - name: install node resource
   hosts: all
+  gather_facts: true
   roles:
-    - { role: ./role/container-runtimes }
-  tags:
-    - crio
-    - k8s_base
-    - k8s_tools
+    - { role: ./role/k8s-base }

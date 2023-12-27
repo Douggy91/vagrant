@@ -15,17 +15,3 @@
   tags: 
     - k8s_tools
 
-- name: Init kubeadm
-  include_tasks: k8s_cluster_init.yml  
-  tags: 
-    - k8s_init
-
-- name: connect kubeadm
-  include_tasks: k8s_cluster_connect.yml  
-  tags: 
-    - k8s_connect
-
-- name: connect worker
-  include_tasks: k8s_cluster_worker.yml 
-  tags: 
-    - k8s_worker

@@ -1,6 +1,4 @@
 - name: install k8s master init
   hosts: master-connect
   roles:
-    - { role: ./role/container-runtimes }
-  tags:
-    - k8s_connect
+    - { role: ./role/k8s-connect }

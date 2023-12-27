@@ -1,0 +1,8 @@
+# BEGIN ANSIBLE MANAGED BLOCK
+token: K1091a6645bd7e98e93cac59fe987740140ce89ef334e5813091e225200fabd410e::server:592f84d38cd1de9fd84723cc556b31d4
+server: https://192.168.31.161:9345
+cni: "calico"
+tls-san:
+  - my-kubernetes-domain.com
+  - another-kubernetes-domain.com
+# END ANSIBLE MANAGED BLOCK
