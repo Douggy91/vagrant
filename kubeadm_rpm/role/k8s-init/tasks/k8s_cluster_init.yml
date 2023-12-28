@@ -1,5 +1,5 @@
 - name: kubeadm init
-  shell: kubeadm init --control-plane-endpoint=192.168.31.160 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | grep -A 2 "kubeadm join" | sed -e 's/\-\-//g'
+  shell: kubeadm init --control-plane-endpoint=192.168.31.160 --pod-network-cidr=172.16.0.0/16 --token 123456.1234567890123456 --token-ttl 0 | grep -A 2 "kubeadm join" 
   register: INIT_COMMAND
   tags:
     - k8s_init
