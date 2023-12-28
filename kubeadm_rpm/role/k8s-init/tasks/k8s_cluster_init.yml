@@ -45,6 +45,7 @@
   fetch:
     src: "/tmp/JOIN_COMMAND_M" 
     dest: "/tmp/JOIN_COMMAND_M"
+    flat: yes
   tags:
     - k8s_init
 
@@ -52,6 +53,7 @@
   fetch:
     src: "/tmp/JOIN_COMMAND_W" 
     dest: "/tmp/JOIN_COMMAND_W"
+    flat: yes
   tags:
     - k8s_init
 
