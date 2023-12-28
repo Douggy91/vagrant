@@ -1,6 +1,0 @@
----
-# vars file for container-runtimes
-
-#dist_type: "ubuntu"
-dist_type: "{{ 'ubuntu' if ansible_distribution == 'Ubuntu' }}"
-install_dir: "/tmp" 
