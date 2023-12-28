@@ -48,30 +48,30 @@
   tags:
     - k8s_base
 
-- name: disable systemd-resolved
-  systemd:
-    name: systemd-resolved
-    state: stopped
-    enabled: no
-  tags:
-    - k8s_base
+# - name: disable systemd-resolved
+#   systemd:
+#     name: systemd-resolved
+#     state: stopped
+#     enabled: no
+#   tags:
+#     - k8s_base
 
-- name: Cofigure DNS default
-  shell: sed -i '/\[main\]/a dns=default' /etc/NetworkManager/NetworkManager.conf
-  tags:
-    - k8s_base
+# - name: Cofigure DNS default
+#   shell: sed -i '/\[main\]/a dns=default' /etc/NetworkManager/NetworkManager.conf
+#   tags:
+#     - k8s_base
 
-- name: unlink resolv.conf
-  shell: unlink /etc/resolv.conf || true
-  tags:
-    - k8s_base
+# - name: unlink resolv.conf
+#   shell: unlink /etc/resolv.conf || true
+#   tags:
+#     - k8s_base
 
-- name: touch resolv.conf
-  file:
-    path: /etc/resolv.conf
-    state: touch
-  tags:
-    - k8s_base
+# - name: touch resolv.conf
+#   file:
+#     path: /etc/resolv.conf
+#     state: touch
+#   tags:
+#     - k8s_base
 
 - name: set-hostname
   hostname:
