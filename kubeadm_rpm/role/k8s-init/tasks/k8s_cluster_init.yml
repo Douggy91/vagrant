@@ -32,7 +32,7 @@
     - k8s_init
 
 - name: Save registered output to a file -Master
-  shell: 'cat "/tmp/JOIN_COMMAND" | head -n 3 > "/tmp/JOIN_COMMAND_M"'
+  shell: 'cat "/tmp/JOIN_COMMAND" | head -n 4 > "/tmp/JOIN_COMMAND_M"'
   tags:
     - k8s_init
 
