@@ -4,3 +4,4 @@
 #dist_type: "ubuntu"
 dist_type: "{{ 'ubuntu' if ansible_distribution == 'Ubuntu' }}"
 install_dir: "/tmp" 
+BASTION_NODE_IP: "192.168.31.160"
