@@ -99,7 +99,7 @@
     block: |
       export KUBECONFIG=/etc/kubernetes/admin.conf
       alias k=kubectl
-      complete -o default -F __start_kubectl k 
+  #    complete -o default -F __start_kubectl k 
   #  copy: 
   #    src: '/etc/kubernetes/admin.conf'
   #    dest: '/root/.kube/config.yaml'
