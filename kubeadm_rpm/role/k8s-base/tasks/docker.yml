@@ -2,16 +2,16 @@
 # tasks file for container-runtimes
 - name: copy resource
   copy:
-    src: "{{ dist_type }}/runc.tar"
+    src: "{{ dist_type }}/base.tar"
     dest: "{{ install_dir }}/"
     mode: 0644
   tags:
     - crio
     - redo
 
-- name: unarchive runc.tar
+- name: unarchive base.tar
   unarchive:
-    src: "{{ install_dir }}/runc.tar"
+    src: "{{ install_dir }}/base.tar"
     dest: "{{ install_dir }}/"
     remote_src: yes
   tags:
@@ -20,7 +20,7 @@
 
 - name: Index *.deb file
   find:
-    path: "{{ install_dir }}/2_apt_crio"
+    path: "{{ install_dir }}/2_update_docker"
     file_type: file
     patterns: "*.deb"
   register: deb_array_2
@@ -35,7 +35,7 @@
     - redo
 
 - name: install Deb files
-  shell: "dpkg -i {{ install_dir }}/2_apt_crio/*.deb" 
+  shell: "dpkg -i {{ install_dir }}/2_update_docker/*.deb" 
   #  apt:
   #    deb: "{{ item }}"
   #    state: present

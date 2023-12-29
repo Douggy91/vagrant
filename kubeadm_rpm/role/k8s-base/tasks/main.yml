@@ -1,9 +1,9 @@
 ---
 # tasks file for container-runtimes
-- name: install runc
-  include_tasks: crio.yml
+- name: install docker
+  include_tasks: docker.yml
   tags: 
-    - crio
+    - docker
     - redo
 - name: configure Node
   include_tasks: k8s_base.yml  
