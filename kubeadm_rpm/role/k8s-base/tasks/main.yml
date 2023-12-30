@@ -2,16 +2,9 @@
 # tasks file for container-runtimes
 - name: install docker
   include_tasks: docker.yml
-  tags: 
-    - docker
-    - redo
+
 - name: configure Node
   include_tasks: k8s_base.yml  
-  tags: 
-    - k8s_base
 
 - name: install kube-tools
   include_tasks: k8s_tools.yml  
-  tags: 
-    - k8s_tools
-
