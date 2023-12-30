@@ -77,8 +77,19 @@
   tags: 
     - k8s_base
 
-- name: edit config.toml
-  shell: sed -i 's/^disabled_plugins = \["cri"\]/#&/' /etc/containerd/config.toml
+- name: copy config.toml
+  copy:
+    src: images/config.toml
+    dest: /etc/containerd/config.toml
+  tags:
+    - k8s_base
+
+- name: touch debug.toml
+  file:
+    path: /etc/containerd/debug.toml
+    state: touch
+  tags:
+    - k8s_base
 
 - name: set-hostname
   hostname:
