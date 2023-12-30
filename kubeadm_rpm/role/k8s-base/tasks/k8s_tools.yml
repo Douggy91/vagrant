@@ -93,9 +93,11 @@
    mode: 0755
   tags:
     - k8s_tools
+    - registry
 
 - name : run image_saves
   shell: . /root/images_pull
   tags:
     - k8s_tools
+    - registry
   
