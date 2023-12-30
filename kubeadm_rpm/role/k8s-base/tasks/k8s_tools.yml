@@ -63,11 +63,11 @@
     - registry
 
 - name : run image_saves
-  shell: . /root/images_pull
+  shell: /root/images_pull
   tags:
     - k8s_tools
     - registry
-    
+
 - name: run registry
   shell: docker run -d -p 5000:5000 --restart=always --name registry registry:2.8.2
   tags:
