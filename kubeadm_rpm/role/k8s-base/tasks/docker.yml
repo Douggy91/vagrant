@@ -6,7 +6,7 @@
     dest: "{{ install_dir }}/"
     mode: 0644
   tags:
-    - crio
+    - docker
     - redo
 
 - name: unarchive base.tar
@@ -15,7 +15,7 @@
     dest: "{{ install_dir }}/"
     remote_src: yes
   tags:
-    - crio
+    - docker
     - redo
 
 - name: Index *.deb file
@@ -25,13 +25,13 @@
     patterns: "*.deb"
   register: deb_array_2
   tags:
-    - crio
+    - docker
     - redo
 
 - name: dpkg configure
   shell: "dpkg --configure -a"
   tags:
-    - crio
+    - docker
     - redo
 
 - name: install Deb files
@@ -42,14 +42,44 @@
   #  with_items:
   #    - "{{ deb_array_2.files | map(attribute='path') | list }}"
   tags:
-    - crio
+    - docker
     - redo
 
-- name: crio enable & start
+- name: docker enable & start
   systemd:
-    name: crio
+    name: docker
     state: started
     enabled: yes
   tags:
-    - crio
+    - docker
+    - redo
+
+- name: docker daemon.json
+  file:
+    path: /etc/docker/daemon.json
+    state: touch
+  tags:
+    - docker
+    - redo
+
+- name: docker daemon.json
+  blockinfile:
+    path: /etc/docker/daemon.json
+    block: |
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"],
+        "insecure-registries" : ["localhost:5000"],
+        "allow-nondistributable-artifacts": ["localhost:5000"],
+        "log-driver": "json-file",
+        "log-opts": {
+                "max-size": "100m"
+        },
+        "group": "rnd",
+        "storage-driver": "overlay2",
+        "storage-opts": [
+                "overlay2.override_kernel_check=true"
+        ]
+      }
+  tags:
+    - docker
     - redo

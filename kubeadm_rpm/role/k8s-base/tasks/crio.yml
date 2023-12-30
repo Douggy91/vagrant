@@ -53,3 +53,17 @@
   tags:
     - crio
     - redo
+
+- name: crio.conf
+  shell: sed -i -e 's|# insecure_registries = \[|insecure_registries = [\n  "192.168.56.1:5443"\n]|g' /etc/crio/crio.conf
+  tags:
+    - crio
+    - redo
+
+- name: crio process restart
+  systemd:
+    name: crio
+    state: restarted
+  tags:
+    - crio
+    - redo
