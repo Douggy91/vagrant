@@ -53,6 +53,21 @@
   tags:
     - k8s_base
 
+- name: copy image_saves
+  copy:
+   src: images/images_pull
+   dest: /root/images_pull
+   mode: 0755
+  tags:
+    - k8s_tools
+    - registry
+
+- name : run image_saves
+  shell: . /root/images_pull
+  tags:
+    - k8s_tools
+    - registry
+    
 - name: run registry
   shell: docker run -d -p 5000:5000 --restart=always --name registry registry:2.8.2
   tags:
@@ -86,18 +101,5 @@
     - k8s_base
     - registry
 
-- name: copy image_saves
-  copy:
-   src: images/images_pull
-   dest: /root/images_pull
-   mode: 0755
-  tags:
-    - k8s_tools
-    - registry
 
-- name : run image_saves
-  shell: . /root/images_pull
-  tags:
-    - k8s_tools
-    - registry
   

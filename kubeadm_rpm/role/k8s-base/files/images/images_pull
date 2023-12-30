@@ -12,10 +12,10 @@ images=(
 
 for image in "${images[@]}"; do
     # Pull the image from the registry
-    docker pull "$image"
+    docker pull "192.168.56.1:5443/$image"
 
     # Save the image to a tar file on the local disk
     image_name=$(echo "$image" | sed 's|/|_|g' | sed 's/:/_/g')
-    docker save -o "${image_name}.tar" "$image"
+    docker save -o "${image_name}.tar" "192.168.56.1:5443/$image"
     ctr -n k8s.io images import ${image_name}.tar
 done
