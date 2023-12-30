@@ -63,6 +63,13 @@
   tags:
     - k8s_base
 
+- name: Copy kubelet serviced
+  copy:
+    src: images/kubelet.service
+    dest: /etc/systemd/system/kubelet.service
+  tags:
+    - k8s_base
+
 - name: Copy 10-kubeamd.conf
   copy:
     src: images/10-kubeadm.conf
@@ -94,23 +101,3 @@
   tags:
     - k8s_base
     - images
-
-# - name: pull images
-#   shell: "docker pull 192.168.56.1:5443/{{ item }}"
-#   with_items:
-#     - registry:2.8.2
-#     - registry.k8s.io/kube-apiserver:v1.28.2
-#     - registry.k8s.io/kube-scheduler:v1.28.2
-#     - registry.k8s.io/kube-controller-manager:v1.28.2
-#     - registry.k8s.io/kube-proxy:v1.28.2
-#     - calico/kube-controllers:v3.26.1
-#     - calico/cni:v3.26.1
-#     - calico/node:v3.26.1
-#     - flannel/flannel:v0.22.0
-#     - registry.k8s.io/coredns:v1.10.1
-#     - registry.k8s.io/etcd:3.5.9-0
-#     - flannel/flannel-cni-plugin:v1.1.2
-#     - registry.k8s.io/pause:3.9
-#   tags:
-#     - k8s_base
-#     - images
