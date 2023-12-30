@@ -7,7 +7,6 @@
     mode: 0644
   tags:
     - docker
-    - redo
 
 - name: unarchive base.tar
   unarchive:
@@ -16,7 +15,6 @@
     remote_src: yes
   tags:
     - docker
-    - redo
 
 - name: Index *.deb file
   find:
@@ -26,24 +24,16 @@
   register: deb_array_2
   tags:
     - docker
-    - redo
 
 - name: dpkg configure
   shell: "dpkg --configure -a"
   tags:
     - docker
-    - redo
 
 - name: install Deb files
   shell: "dpkg -i {{ install_dir }}/2_update_docker/*.deb" 
-  #  apt:
-  #    deb: "{{ item }}"
-  #    state: present
-  #  with_items:
-  #    - "{{ deb_array_2.files | map(attribute='path') | list }}"
   tags:
     - docker
-    - redo
 
 - name: docker enable & start
   systemd:
@@ -52,15 +42,6 @@
     enabled: yes
   tags:
     - docker
-    - redo
-
-- name: docker daemon.json
-  file:
-    path: /etc/docker/daemon.json
-    state: touch
-  tags:
-    - docker
-    - redo
 
 - name: docker daemon.json
   copy:
@@ -80,7 +61,7 @@
     - redo
 
 - name: docker login 
-  shell: docker login 192.168.56.1:5443 --username admin --password admin1234
+  shell: printf "admin1234\n" | docker login 192.168.56.1:5443 --username admin --password-stdin
   tags:
     - docker
     - redo
