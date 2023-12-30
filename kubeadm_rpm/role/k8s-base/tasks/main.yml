@@ -4,7 +4,7 @@
   include_tasks: docker.yml
   tags: 
     - docker
-    - redo
+   
 - name: configure Node
   include_tasks: k8s_base.yml  
   tags: 
