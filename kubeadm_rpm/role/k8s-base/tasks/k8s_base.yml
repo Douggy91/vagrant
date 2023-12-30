@@ -56,6 +56,34 @@
   tags:
     - k8s_base
 
+- name: mkdir kubelet service_d
+  file:
+    path: /etc/systemd/system/kubelet.service.d/
+    state: directory
+  tags:
+    - k8s_base
+
+- name: Copy 10-kubeamd.conf
+  copy:
+    src: images/10-kubeadm.conf
+    dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  tags: 
+    - k8s_base
+
+- name: edit config.toml
+  shell: sed -i 's/^disabled_plugins = \["cri"\]/#&/' /etc/containerd/config.toml
+
+- name: resetard systemd"
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items: 
+    - containerd
+    - kubelet
+  tags:
+    - k8s_base
+
 - name: set-hostname
   hostname:
     name: "{{ inventory_hostname }}"
