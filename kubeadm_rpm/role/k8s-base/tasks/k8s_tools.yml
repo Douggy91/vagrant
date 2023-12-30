@@ -9,7 +9,7 @@
     - k8s_tools
 
 - name : run image_saves
-  shell: source /root/images_pull
+  shell: /root/images_pull
   tags:
     - k8s_tools
 #- name: unarchive kube_tools.tar
