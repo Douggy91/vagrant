@@ -15,4 +15,5 @@
   include_tasks: k8s_tools.yml  
   tags: 
     - k8s_tools
+    - registry
 
