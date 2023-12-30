@@ -73,17 +73,6 @@
 - name: edit config.toml
   shell: sed -i 's/^disabled_plugins = \["cri"\]/#&/' /etc/containerd/config.toml
 
-- name: resetard systemd"
-  systemd:
-    name: "{{ item }}"
-    state: restarted
-    enabled: yes
-  with_items: 
-    - containerd
-    - kubelet
-  tags:
-    - k8s_base
-
 - name: set-hostname
   hostname:
     name: "{{ inventory_hostname }}"
@@ -96,6 +85,7 @@
     dest: /etc/hosts
   tags:
     - k8s_base
+    - images
 
 - name: copy /etc/resolv.conf
   copy:
@@ -103,9 +93,10 @@
     dest: /etc/resolv.conf
   tags:
     - k8s_base
+    - images
 
 - name: pull images
-  shell: "crictl pull 192.168.56.1:5443/{{ item }}"
+  shell: "docker pull 192.168.56.1:5443/{{ item }}"
   with_items:
     - registry:2.8.2
     - registry.k8s.io/kube-apiserver:v1.28.2

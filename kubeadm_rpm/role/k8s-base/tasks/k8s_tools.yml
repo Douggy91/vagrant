@@ -53,3 +53,14 @@
     echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
   tags:
     - k8s_tools
+
+- name: resetard systemd"
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items: 
+    - containerd
+    - kubelet
+  tags:
+    - k8s_base
