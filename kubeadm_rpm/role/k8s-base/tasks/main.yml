@@ -9,7 +9,7 @@
   include_tasks: k8s_base.yml  
   tags: 
     - k8s_base
-    - images
+    - config
 
 - name: install kube-tools
   include_tasks: k8s_tools.yml  
