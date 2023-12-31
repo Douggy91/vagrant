@@ -127,6 +127,11 @@
   tags:
     - k8s_base
 
+- name: set default ipv4
+  shell: "ip route default via {{ ansible_enp0s8.ipv4.address }}"
+  tags:
+    - k8s_base
+
 - name: copy /etc/resolv.conf
   copy:
     src: /etc/resolv.conf
