@@ -58,6 +58,15 @@
   tags:
     - k8s_base
 
+- name: copy crictl.yaml
+  copy:
+   src: images/crictl.yaml
+   dest: /etc/crictl.yaml
+   mode: 0644
+  tags:
+    - k8s_tools
+    - registry
+
 - name: copy image_saves
   copy:
    src: images/images_pull
