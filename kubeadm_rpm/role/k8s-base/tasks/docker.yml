@@ -8,7 +8,7 @@
   with_items: 
     - base.tar
     - cni-plugins-linux-amd64-v1.3.0.tgz
-    - crictl-v1.27.0-linuxs-amd664.tar.gz
+    - crictl-v1.27.0-linuxs-amd64.tar.gz
   tags:
     - docker
 
