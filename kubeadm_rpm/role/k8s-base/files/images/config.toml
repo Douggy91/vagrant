@@ -36,7 +36,7 @@ imports = ["/etc/containerd/runtime_*.toml", "./debug.toml"]
     startup_delay = "100ms"
   [plugins."io.containerd.runtime.v2.task"]
     platforms = ["linux/amd64"]
-    sched_core = true
+    sched_core = false
   [plugins."io.containerd.service.v1.tasks-service"]
     blockio_config_file = ""
     rdt_config_file = ""
