@@ -2,17 +2,32 @@
 # tasks file for container-runtimes
 - name: copy resource
   copy:
-    src: "{{ dist_type }}/base.tar"
+    src: "{{ dist_type }}/{{ item }}"
     dest: "{{ install_dir }}/"
     mode: 0644
+  with_items: 
+    - base.tar
+    - cni-plugins-linux-amd64-v1.3.0.tgz
+    - crictl-v1.27.0-linuxs-amd664.tar.gz
+  tags:
+    - docker
+
+- name: mkdir 
+  file:
+    path: "/opt/cni/bin"
+    state: directory
   tags:
     - docker
 
 - name: unarchive base.tar
   unarchive:
-    src: "{{ install_dir }}/base.tar"
-    dest: "{{ install_dir }}/"
+    src: "{{ install_dir }}/{{ item.src}}"
+    dest: "{{ item.dest }}"
     remote_src: yes
+  with_items: 
+    - { src: "base.tar", dest: "{{ install_dir }}/"}
+    - { src: "cni-plugins-linux-amd64-v1.3.0.tgz", dest: "/opt/cni/bin"}
+    - { src: "crictl-v1.27.0-linux-amd64.tar.gz", dest: "/usr/local/bin"}
   tags:
     - docker
 
