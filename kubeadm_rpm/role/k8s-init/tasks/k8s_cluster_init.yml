@@ -119,7 +119,7 @@
     - k8s_init
 
 - name: deploy CNI
-  shell: kubectl apply -f /root/k8s_yaml/kube-flannel.yaml --kubeconfig=/etc/kubernetes/admin.conf
+  shell: kubectl apply -f /root/k8s_yaml/kube-flannel.yml --kubeconfig=/etc/kubernetes/admin.conf
   tags:
     - k8s_init
     - redo
