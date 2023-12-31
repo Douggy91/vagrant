@@ -5,9 +5,6 @@
   tags:
     - k8s_connect
 
-- name: get kube-cert
-  shell: "kubeadm init phase certs all --apiserver-advertise-address={{ BASTION_NODE_IP }}"
-
 - name: kubeadm connect
   shell: '. /tmp/JOIN_COMMAND_M' 
   register: INIT_COMMAND
