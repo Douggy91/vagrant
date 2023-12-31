@@ -1,7 +1,7 @@
 {
     "exec-opts": ["native.cgroupdriver=systemd"],
     "insecure-registries" : ["localhost:5000", "{{ CONTROL_REGISTRY }}"],
-    "allow-nondistributable-artifacts": ["localhost:5000"],
+    "allow-nondistributable-artifacts": ["localhost:5000", "{{ CONTROL_REGISTRY }}" ],
     "log-driver": "json-file",
     "log-opts": {
       "max-size": "100m"
