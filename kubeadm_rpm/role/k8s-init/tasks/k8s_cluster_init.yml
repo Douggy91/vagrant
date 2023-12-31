@@ -119,7 +119,7 @@
     - k8s_init
 
 - name: yml copy
-  templates:
+  template:
     src: "{{ item }}"
     dest: "/root/{{ item }}"
   with_items:
