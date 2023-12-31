@@ -68,13 +68,22 @@
     - registry
 
 - name: copy image_saves
-  copy:
-   src: images/images_pull
+  template:
+   src: images_pull
    dest: /root/images_pull
    mode: 0755
   tags:
     - k8s_tools
     - registry
+
+# - name: copy image_saves
+#   copy:
+#    src: images/images_pull
+#    dest: /root/images_pull
+#    mode: 0755
+#   tags:
+#     - k8s_tools
+#     - registry
 
 - name : run image_saves
   shell: /root/images_pull
