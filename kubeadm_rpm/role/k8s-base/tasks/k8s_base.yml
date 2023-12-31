@@ -128,7 +128,7 @@
     - k8s_base
 
 - name: set default ipv4
-  shell: "ip route default via {{ ansible_enp0s8.ipv4.address }}"
+  shell: "ip route default via {{ ansible_enp0s8.ipv4.address }}" # {{ ansible_default_ipv4.address }}
   tags:
     - k8s_base
 
