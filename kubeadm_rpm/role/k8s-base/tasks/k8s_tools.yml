@@ -73,7 +73,12 @@
 #   tags:
 #     - k8s_tools
 #     - registry
-- name: resetard systemd"
+- name: daemo-reload
+  shell: systemctl daemo-reload
+  tags:
+    - k8s_base 
+  
+- name: resetard systemd
   systemd:
     name: "{{ item }}"
     state: restarted
@@ -95,42 +100,3 @@
   tags:
     - k8s_base
     - registry
-
-- name: pull flannel
-  shell: "docker pull {{ CONTROL_REGISTRY }}/flannel/{{ item }}"
-  with_items: 
-    - flannel:v0.22.0
-    - flannel-cni-plugin:v1.1.2
-  tags:
-    - k8s_base
-    - registry
-
-- name: tagging config
-  shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
-  with_items: 
-    - flannel/flannel:v0.22.0
-    - flannel/flannel-cni-plugin:v1.1.2
-  tags:
-    - k8s_base
-    - registry
-
-- name: push config to localhost
-  shell: "docker push localhost:5000/{{ item }}"
-  with_items: 
-    - flannel/flannel:v0.22.0
-    - flannel/flannel-cni-plugin:v1.1.2
-  tags:
-    - k8s_base
-    - registry
-
-- name: resetard systemd"
-  systemd:
-    name: "{{ item }}"
-    state: restarted
-    enabled: yes
-  with_items: 
-    - containerd
-    - kubelet
-  tags:
-    - k8s_base
-  

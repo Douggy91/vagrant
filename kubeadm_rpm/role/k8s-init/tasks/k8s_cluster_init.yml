@@ -130,15 +130,82 @@
     - k8s_init
     - redo
 
-- name: deploy CNI
+- name: pull calico
+  shell: "docker pull {{ CONTROL_REGISTRY }}/{{ item }}"
+  with_items: 
+    - calico/cni:v3.26.1
+    - calico/node:v3.26.1
+    - calico/kube-controllers:v3.26.1
+  when: "{{ K8S_CNI }} == calico"
+  tags:
+    - k8s_base
+    - registry
+
+- name: tagging config
+  shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
+  with_items: 
+    - calico/cni:v3.26.1
+    - calico/node:v3.26.1
+    - calico/kube-controllers:v3.26.1
+  when: "{{ K8S_CNI }} == calico"
+  tags:
+    - k8s_base
+    - registry
+
+- name: push config to localhost
+  shell: "docker push localhost:5000/{{ item }}"
+  with_items: 
+    - calico/cni:v3.26.1
+    - calico/node:v3.26.1
+    - calico/kube-controllers:v3.26.1
+  when: "{{ K8S_CNI }} == calico"
+  tags:
+    - k8s_base
+    - registry
+
+- name: deploy CNI - Calico
   shell: kubectl apply -f /root/calico.yaml --kubeconfig=/etc/kubernetes/admin.conf
+  when: "{{ K8S_CNI }} == calico"
   tags:
     - k8s_init
     - redo
-  # shell: kubectl apply -f /root/kube-flannel.yml --kubeconfig=/etc/kubernetes/admin.conf
-  # tags:
-  #   - k8s_init
-  #   - redo
+
+- name: pull flannel
+  shell: "docker pull {{ CONTROL_REGISTRY }}/flannel/{{ item }}"
+  with_items: 
+    - flannel:v0.22.0
+    - flannel-cni-plugin:v1.1.2
+  when: "{{ K8S_CNI }} == flannel"
+  tags:
+    - k8s_base
+    - registry
+
+- name: tagging config
+  shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
+  with_items: 
+    - flannel/flannel:v0.22.0
+    - flannel/flannel-cni-plugin:v1.1.2
+  when: "{{ K8S_CNI }} == flannel"
+  tags:
+    - k8s_base
+    - registry
+
+- name: push config to localhost
+  shell: "docker push localhost:5000/{{ item }}"
+  with_items: 
+    - flannel/flannel:v0.22.0
+    - flannel/flannel-cni-plugin:v1.1.2
+  when: "{{ K8S_CNI }} == flannel"
+  tags:
+    - k8s_base
+    - registry
+
+- name: deploy CNI - flannel
+  shell: kubectl apply -f /root/kube-flannel.yml --kubeconfig=/etc/kubernetes/admin.conf
+  when: "{{ K8S_CNI }} == flannel"
+  tags:
+    - k8s_init
+    - redo
 
 - name: deploy IngressController
   shell: kubectl apply -f /root/ingress_controller.yaml --kubeconfig=/etc/kubernetes/admin.conf
