@@ -1,2 +1,4 @@
 3_k8s_tools
 *.tar
+*.tar.gz
+*.tgz
