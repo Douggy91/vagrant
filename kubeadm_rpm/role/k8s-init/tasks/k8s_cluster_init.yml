@@ -124,7 +124,7 @@
     dest: "/root/{{ item }}"
   with_items:
     - kube-flannel.yml
-    - ingress-controller.yaml
+    - ingress_controller.yaml
     - calico.yaml
   tags:
     - k8s_init
@@ -141,7 +141,7 @@
   #   - redo
 
 - name: deploy IngressController
-  shell: kubectl apply -f /root/ingress-controller.yaml --kubeconfig=/etc/kubernetes/admin.conf
+  shell: kubectl apply -f /root/ingress_controller.yaml --kubeconfig=/etc/kubernetes/admin.conf
   tags:
     - k8s_init
     - redo
