@@ -95,21 +95,21 @@
 
 - name: Copy kubelet serviced
   copy:
-    src: images/kubelet.service
+    src: config/kubelet.service
     dest: /etc/systemd/system/kubelet.service
   tags:
     - k8s_base
 
 - name: Copy 10-kubeamd.conf
   copy:
-    src: images/10-kubeadm.conf
+    src: config/10-kubeadm.conf
     dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
   tags: 
     - k8s_base
 
 - name: copy config.toml
   copy:
-    src: images/config.toml
+    src: config/config.toml
     dest: /etc/containerd/config.toml
   tags:
     - k8s_base
@@ -138,4 +138,4 @@
     dest: /etc/resolv.conf
   tags:
     - k8s_base
-    - images
+    - config

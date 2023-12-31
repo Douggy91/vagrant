@@ -60,7 +60,7 @@
 
 - name: docker daemon.json
   copy:
-    src: images/daemon.json
+    src: config/daemon.json
     dest: /etc/docker/daemon.json
   tags:
     - docker

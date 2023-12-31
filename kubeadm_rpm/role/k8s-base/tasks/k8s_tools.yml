@@ -60,7 +60,7 @@
 
 - name: copy crictl.yaml
   copy:
-   src: images/crictl.yaml
+   src: config/crictl.yaml
    dest: /etc/crictl.yaml
    mode: 0644
   tags:
@@ -78,7 +78,7 @@
 
 # - name: copy image_saves
 #   copy:
-#    src: images/images_pull
+#    src: config/images_pull
 #    dest: /root/images_pull
 #    mode: 0755
 #   tags:
@@ -106,7 +106,7 @@
     - k8s_base
     - registry
 
-- name: tagging images
+- name: tagging config
   shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
   with_items: 
     - flannel/flannel:v0.22.0
@@ -115,7 +115,7 @@
     - k8s_base
     - registry
 
-- name: push images to localhost
+- name: push config to localhost
   shell: "docker push localhost:5000/{{ item }}"
   with_items: 
     - flannel/flannel:v0.22.0
