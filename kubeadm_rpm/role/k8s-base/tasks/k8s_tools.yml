@@ -74,7 +74,7 @@
 #     - k8s_tools
 #     - registry
 - name: daemo-reload
-  shell: systemctl daemo-reload
+  shell: systemctl daemon-reload
   tags:
     - k8s_base 
   
