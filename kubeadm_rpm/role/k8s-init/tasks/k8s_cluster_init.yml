@@ -119,13 +119,7 @@
     - k8s_init
 
 - name: deploy CNI
-  shell: kubectl apply -f /root/k8s_yaml/calico.yaml --kubeconfig=/etc/kubernetes/admin.conf
-  tags:
-    - k8s_init
-    - redo
-
-- name: deploy IngressController
-  shell: kubectl apply -f /root/k8s_yaml/ingress_controller.yaml --kubeconfig=/etc/kubernetes/admin.conf
+  shell: kubectl apply -f /root/k8s_yaml/kube-flannel.yaml --kubeconfig=/etc/kubernetes/admin.conf
   tags:
     - k8s_init
     - redo
