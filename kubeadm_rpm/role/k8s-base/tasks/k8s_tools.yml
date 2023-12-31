@@ -47,17 +47,6 @@
   tags:
     - k8s_tools
 
-- name: resetard systemd"
-  systemd:
-    name: "{{ item }}"
-    state: restarted
-    enabled: yes
-  with_items: 
-    - containerd
-    - kubelet
-  tags:
-    - k8s_base
-
 - name: copy crictl.yaml
   copy:
    src: config/crictl.yaml
@@ -84,6 +73,16 @@
 #   tags:
 #     - k8s_tools
 #     - registry
+- name: resetard systemd"
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items: 
+    - containerd
+    - kubelet
+  tags:
+    - k8s_base
 
 - name : run image_saves
   shell: /root/images_pull
@@ -124,5 +123,14 @@
     - k8s_base
     - registry
 
-
+- name: resetard systemd"
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items: 
+    - containerd
+    - kubelet
+  tags:
+    - k8s_base
   
