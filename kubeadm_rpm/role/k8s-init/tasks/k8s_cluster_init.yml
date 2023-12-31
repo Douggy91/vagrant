@@ -118,8 +118,31 @@
   tags:
     - k8s_init
 
-- name: deploy CNI
-  shell: kubectl apply -f /root/k8s_yaml/kube-flannel.yml --kubeconfig=/etc/kubernetes/admin.conf
+- name: yml copy
+  templates:
+    src: "{{ item }}"
+    dest: "/root/{{ item }}"
+  with_items:
+    - kube-flannel.yml
+    - ingress-controller.yaml
+    - calico.yaml
   tags:
     - k8s_init
     - redo
+
+- name: deploy CNI
+  shell: kubectl apply -f /root/calico.yaml --kubeconfig=/etc/kubernetes/admin.conf
+  tags:
+    - k8s_init
+    - redo
+  # shell: kubectl apply -f /root/kube-flannel.yml --kubeconfig=/etc/kubernetes/admin.conf
+  # tags:
+  #   - k8s_init
+  #   - redo
+
+- name: deploy IngressController
+  shell: kubectl apply -f /root/ingress-controller.yaml --kubeconfig=/etc/kubernetes/admin.conf
+  tags:
+    - k8s_init
+    - redo
+
