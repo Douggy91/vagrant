@@ -59,8 +59,8 @@
     - docker
 
 - name: docker daemon.json
-  copy:
-    src: config/daemon.json
+  template:
+    src: daemon.json
     dest: /etc/docker/daemon.json
   tags:
     - docker
