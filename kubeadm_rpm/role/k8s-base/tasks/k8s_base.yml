@@ -140,3 +140,8 @@
     enabled: yes
   tags:
     - k8s_base
+
+- name: containerd config dump
+  shell: containerd config dump
+  tags:
+    - k8s_base

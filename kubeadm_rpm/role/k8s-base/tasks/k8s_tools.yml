@@ -60,70 +60,70 @@
   tags:
     - k8s_tools
 
-- name: run registry
-  shell: docker run -d -p 5000:5000 --restart=always --name registry {{ CONTROL_REGISTRY }}/registry:2.8.2
-  tags:
-    - k8s_tools
+# - name: run registry
+#   shell: docker run -d -p 5000:5000 --restart=always --name registry {{ CONTROL_REGISTRY }}/registry:2.8.2
+#   tags:
+#     - k8s_tools
 
-- name: pull calico
-  shell: "docker pull {{ CONTROL_REGISTRY }}/{{ item }}"
-  with_items: 
-    - calico/cni:v3.26.1
-    - calico/node:v3.26.1
-    - calico/kube-controllers:v3.26.1
-  when: K8S_CNI == "calico"
-  tags:
-    - k8s_tools
-    - registry
+# - name: pull calico
+#   shell: "docker pull {{ CONTROL_REGISTRY }}/{{ item }}"
+#   with_items: 
+#     - calico/cni:v3.26.1
+#     - calico/node:v3.26.1
+#     - calico/kube-controllers:v3.26.1
+#   when: K8S_CNI == "calico"
+#   tags:
+#     - k8s_tools
+#     - registry
 
-- name: tagging config
-  shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
-  with_items: 
-    - calico/cni:v3.26.1
-    - calico/node:v3.26.1
-    - calico/kube-controllers:v3.26.1
-  when: K8S_CNI == "calico"
-  tags:
-    - k8s_tools
-    - registry
+# - name: tagging config
+#   shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
+#   with_items: 
+#     - calico/cni:v3.26.1
+#     - calico/node:v3.26.1
+#     - calico/kube-controllers:v3.26.1
+#   when: K8S_CNI == "calico"
+#   tags:
+#     - k8s_tools
+#     - registry
 
-- name: push config to localhost
-  shell: "docker push localhost:5000/{{ item }}"
-  with_items: 
-    - calico/cni:v3.26.1
-    - calico/node:v3.26.1
-    - calico/kube-controllers:v3.26.1
-  when: K8S_CNI == "calico"
-  tags:
-    - k8s_tools
-    - registry
+# - name: push config to localhost
+#   shell: "docker push localhost:5000/{{ item }}"
+#   with_items: 
+#     - calico/cni:v3.26.1
+#     - calico/node:v3.26.1
+#     - calico/kube-controllers:v3.26.1
+#   when: K8S_CNI == "calico"
+#   tags:
+#     - k8s_tools
+#     - registry
 
-- name: pull flannel
-  shell: "docker pull {{ CONTROL_REGISTRY }}/flannel/{{ item }}"
-  with_items: 
-    - flannel:v0.22.0
-    - flannel-cni-plugin:v1.1.2
-  when: K8S_CNI == "flannel"
-  tags:
-    - k8s_tools
-    - registry
+# - name: pull flannel
+#   shell: "docker pull {{ CONTROL_REGISTRY }}/flannel/{{ item }}"
+#   with_items: 
+#     - flannel:v0.22.0
+#     - flannel-cni-plugin:v1.1.2
+#   when: K8S_CNI == "flannel"
+#   tags:
+#     - k8s_tools
+#     - registry
 
-- name: tagging config
-  shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
-  with_items: 
-    - flannel/flannel:v0.22.0
-    - flannel/flannel-cni-plugin:v1.1.2
-  when: K8S_CNI == "flannel"
-  tags:
-    - k8s_tools
-    - registry
+# - name: tagging config
+#   shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
+#   with_items: 
+#     - flannel/flannel:v0.22.0
+#     - flannel/flannel-cni-plugin:v1.1.2
+#   when: K8S_CNI == "flannel"
+#   tags:
+#     - k8s_tools
+#     - registry
 
-- name: push config to localhost
-  shell: "docker push localhost:5000/{{ item }}"
-  with_items: 
-    - flannel/flannel:v0.22.0
-    - flannel/flannel-cni-plugin:v1.1.2
-  when: K8S_CNI == "flannel"
-  tags:
-    - k8s_tools
-    - registry
+# - name: push config to localhost
+#   shell: "docker push localhost:5000/{{ item }}"
+#   with_items: 
+#     - flannel/flannel:v0.22.0
+#     - flannel/flannel-cni-plugin:v1.1.2
+#   when: K8S_CNI == "flannel"
+#   tags:
+#     - k8s_tools
+#     - registry
