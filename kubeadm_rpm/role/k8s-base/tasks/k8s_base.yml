@@ -100,8 +100,8 @@
     - k8s_base
 
 - name: copy config.toml
-  copy:
-    src: config/config.toml
+  template:
+    src: config.toml
     dest: /etc/containerd/config.toml
   tags:
     - k8s_base
