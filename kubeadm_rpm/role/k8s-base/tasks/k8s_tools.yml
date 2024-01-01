@@ -31,14 +31,6 @@
   tags:
     - k8s_tools
 
-- name: copy image_saves
-  template:
-   src: images_pull
-   dest: /root/images_pull
-   mode: 0755
-  tags:
-    - k8s_tools
-
 - name: daemo-reload
   shell: systemctl daemon-reload
   tags:
@@ -55,10 +47,18 @@
   tags:
     - k8s_tools
 
-- name : run image_saves
-  shell: /root/images_pull
-  tags:
-    - k8s_tools
+# - name: copy image_saves
+#   template:
+#    src: images_pull
+#    dest: /root/images_pull
+#    mode: 0755
+#   tags:
+#     - k8s_tools
+
+# - name : run image_saves
+#   shell: /root/images_pull
+#   tags:
+#     - k8s_tools
 
 # - name: run registry
 #   shell: docker run -d -p 5000:5000 --restart=always --name registry {{ CONTROL_REGISTRY }}/registry:2.8.2
