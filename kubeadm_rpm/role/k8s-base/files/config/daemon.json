@@ -1,6 +1,6 @@
 {
     "exec-opts": ["native.cgroupdriver=systemd"],
-    "insecure-registries" : ["localhost:5000", "192.168.56.1:5443"],
+    "insecure-registries" : ["localhost:5000", "192.168.56.1:5443", "nexus.nip.io:5443"],
     "allow-nondistributable-artifacts": ["localhost:5000"],
     "log-driver": "json-file",
     "log-opts": {
