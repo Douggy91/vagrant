@@ -4640,7 +4640,6 @@ spec:
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
           image: "{{ CONTROL_REGISTRY }}/calico/cni:v3.26.1"
-          # image: "{{ IMG_REGISTRY }}/calico/cni:v3.26.1"
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
@@ -4669,7 +4668,6 @@ spec:
         # and CNI network config file on each node.
         - name: install-cni
           image: "{{ CONTROL_REGISTRY }}/calico/cni:v3.26.1"
-          # image: "{{ IMG_REGISTRY }}/calico/cni:v3.26.1"
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/install"]
           envFrom:
@@ -4713,7 +4711,6 @@ spec:
         # in best effort fashion, i.e. no failure for errors, to not disrupt pod creation in iptable mode.
         - name: "mount-bpffs"
           image: "{{ CONTROL_REGISTRY }}/calico/node:v3.26.1"
-          # image: "{{ IMG_REGISTRY }}/calico/node:v3.26.1"
           imagePullPolicy: IfNotPresent
           command: ["calico-node", "-init", "-best-effort"]
           volumeMounts:
@@ -4740,7 +4737,6 @@ spec:
         # host.
         - name: calico-node
           image: "{{ CONTROL_REGISTRY }}/calico/node:v3.26.1"
-          # image: "{{ IMG_REGISTRY }}/calico/node:v3.26.1"
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:
@@ -4958,7 +4954,6 @@ spec:
       containers:
         - name: calico-kube-controllers
           image: "{{ CONTROL_REGISTRY }}/calico/kube-controllers:v3.26.1"
-          # image: "{{ IMG_REGISTRY }}/calico/kube-controllers:v3.26.1"
           imagePullPolicy: IfNotPresent
           env:
             # Choose which controllers to run.
