@@ -1,0 +1,13 @@
+prometheus:
+  server-url: "${PROM_URL:http://10.43.87.168:8080}"
+
+server:
+  port: 8080
+
+spring:
+  jackson:
+    default-property-inclusion: NON_NULL
+
+#logging:
+#  level:
+#    root: DEBUG

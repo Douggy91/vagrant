@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-agent-fluentbit-configmap
+  namespace: monitoring
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        flush        2
+        log_level    info
+        Parsers_File parsers.conf
+
+    [INPUT]
+        name             tail
+        tag              server
+        path             /logs/*.log
+        multiline.parser java
+
+    [OUTPUT]
+        name               opensearch
+        match              server
+        host               opensearch-ingest-hl.opensearch.svc.cluster.local
+        port               9200
+        tls                Off
+        tls.verify         Off
+        Suppress_Type_Name On
+        Replace_Dots       On
+        Logstash_Format On
+        logstash_prefix     server-metrics-agent
+        logstash_dateformat     %Y%m%d
+
+    [OUTPUT]
+        Name stdout
+        Match *
+
+  parsers.conf: |
+    [PARSER]
+      Name        jsonfmt
+      Format      json
+      Time_Key    time
