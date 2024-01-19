@@ -1,0 +1,96 @@
+---
+# tasks file for rke2-cluster
+- name: install control 
+  include_tasks: control/control.yaml
+  tags:
+    - control
+    - resource-copy
+    - nginx-install
+    - nginx-setting
+    - docker
+    - gitea
+    - nexus
+
+- name: install rke2-master init
+  include_tasks: master/master_init.yaml
+  tags: 
+    - masters-init
+    - system-params
+    - resource-copy
+    - resource-install
+    - network-config
+    - rke2-init
+    - config-kubeconfig
+    - prepare-connect
+    - config-kubetools
+
+- name: install rke2-master connect
+  include_tasks: master/master_connect.yaml
+  tags: 
+    - masters-connect
+    - system-params
+    - resource-copy
+    - resource-install
+    - network-config
+    - rke2-init
+    - config-kubeconfig
+    - config-kubetools
+
+- name: install rke2-worker
+  include_tasks: worker/worker_connect.yaml
+  tags: 
+    - worker-connect
+    - system-params
+    - resource-copy
+    - resource-install
+    - network-config
+    - rke2-init
+    - config-kubeconfig
+
+- name: set labels
+  include_tasks: deploy_app/labels.yaml
+  tags: 
+    - labels
+    - application
+    - roles
+    - taints
+
+- name: deploy oss
+  include_tasks: deploy_app/oss_setup.yaml
+  tags: 
+    - oss_setup
+    - set_resource
+    - set_helm
+    - deploy_db
+    - monitoring
+    - deploy_dashboard
+
+- name: set-db
+  include_tasks: deploy_app/check_maria.yaml
+  tags: 
+    - check_maria
+    - wait_maria
+    - set_db
+    - cleanup_db
+
+- name: deploy argocd application
+  include_tasks: deploy_app/deploy_argocd.yaml
+  tags: 
+    - deploy_argocd
+    - get_resource
+    - git_resource
+    - set_argocd
+    - deploy_chub
+    - deploy_tts
+    - deploy_stt
+    - deploy_aibot
+    - deploy_amp
+
+- name: deploy monitoring application
+  include_tasks: deploy_monitoring.yaml
+  tags: 
+    - deploy_monitoring
+    - otel-operator
+    - fluent-bit
+    - vas-chub
+    - k8s-prom

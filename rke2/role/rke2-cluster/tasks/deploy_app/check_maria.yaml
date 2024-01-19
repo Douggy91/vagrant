@@ -1,0 +1,158 @@
+- hosts: masters-init  
+  tasks: 
+  - name: 4-3-1. create check script 1
+    file:
+      path: /root/check.sh
+      state: touch
+      mode: 0755
+    tags:
+      - check_maria
+      - wait_maria
+      
+  - name: 4-3-2. create check script 2
+    blockinfile:
+      path: /root/check.sh
+      block: |
+        animation="|/-\\"
+        echo -e "\e[32mCreating MariaDB Pod: $(date +%H:%M:%S)\e[0m"
+        MARIADB_SVC_IP=$(kubectl get svc mariadb -n db | awk '/mariadb/ {print $3}')
+        while true; do
+          MARIADB_POD_STATUS=$(kubectl get pod -n db mariadb-0 -o=jsonpath='{.status.conditions[1].status}' 2>/dev/null)
+          for i in $(seq 0 3); do
+            echo -e -n "${animation:$i:1}"
+            sleep {{ DELAY }}
+            echo -e -en "\b"
+          done
+  
+          if [ "$MARIADB_POD_STATUS" == "True" ]; then
+            MARIADB_SVC_STATUS=$(mysqladmin -u root -p{{ MARIADB_ROOT_PASSWORD }} ping -h $MARIADB_SVC_IP 2>/dev/null)
+            if [ "$MARIADB_SVC_STATUS" == "mysqld is alive" ]; then
+              echo -e "\e[32mSuccess for Creating MariaDB Pod\e[0m"
+              break
+            fi
+            sleep 2
+          else
+            CURRENT_TIME=$(date +%s)
+            ELAPSED_TIME=$((CURRENT_TIME - {{ START_TIME }}))
+  
+            # TimeOut: Error To Create MariaDB Pod
+            if [ $ELAPSED_TIME -ge {{ TIMEOUT }} ]; then
+              echo -e "\e[31mTimeOut: Error To Create MariaDB Pod: $(date +%H:%M:%S)\e[0m"
+              exit 1
+            fi
+          fi
+        done
+    tags:
+      - check_maria
+      - wait_maria
+  
+  - name: 4-3-3. running check script
+    shell: /root/check.sh
+    tags:
+      - check_maria
+      - wait_maria        
+  
+  - name: 4-3-4. Get SVC ip
+    shell: kubectl get svc mariadb -n db | awk '/mariadb/ {print $3}'
+    register: MARIADB_SVC_IP
+    tags:
+      - check_maria
+      - set_db
+  
+  # 하기 tasks들에서 문제가 발생할 경우, 사용가능한 cleaninig script
+  - name: 4-3-5. create cleanup_db script 1
+    file:
+      path: /root/cleanup_db.sh
+      state: touch
+      mode: 0755
+    tags:
+      - check_maria
+      - cleanup_db
+  
+  - name: 4-3-6. create cleanup_db script 2
+    blockinfile:
+      path: /root/cleanup_db.sh
+      block: |
+        mysql -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} -e "DROP DATABASE IF EXISTS chub_kt;" --init-command="SET SESSION FOREIGN_KEY_CHECKS=0"
+        mysql -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} -e "DROP DATABASE IF EXISTS chub_kta;" --init-command="SET SESSION FOREIGN_KEY_CHECKS=0"
+        mysql -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} -e "DROP DATABASE IF EXISTS chub_ktds;" --init-command="SET SESSION FOREIGN_KEY_CHECKS=0"
+  
+        mysql -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} -e "DROP DATABASE IF EXISTS chub_cms;" --init-command="SET SESSION FOREIGN_KEY_CHECKS=0"
+        mysql -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} -e "DROP DATABASE IF EXISTS chub_tenant" --init-command="SET SESSION FOREIGN_KEY_CHECKS=0"
+    tags:
+      - check_maria
+      - cleanup_db
+  
+  - name: 4-3-7. Add TMZ db
+    shell: kubectl exec -n db mariadb-0 -- bash -c "mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p\{{ MARIADB_ROOT_PASSWORD }} mysql"
+    tags:
+      - check_maria
+      - set_db
+  
+  - name: 4-3-8. Create INIT schema
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} </root/manifest/sql/chub/init_mariadb.sql"
+    ignore_errors: yes
+    tags:
+      - check_maria
+      - set_db
+  
+  - name: 4-3-9. Setup Chub_CMS_SCHEME
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} chub_cms </root/manifest/sql/chub/chub_cms_scheme2.sql"
+    tags:
+      - check_maria
+      - set_db
+  
+  - name: 4-3-10. Setup Chub_CMS_DATA
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} chub_cms </root/manifest/sql/chub/chub_cms_data.sql"
+    tags:
+      - check_maria
+      - set_db
+  
+  - name: 4-3-11. Setup Chub_TENANT_SCHEME
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} chub_tenant </root/manifest/sql/chub/chub_tenant_scheme.sql"
+    tags:
+      - check_maria
+      - set_db
+  
+  - name: 4-3-12. Setup Chub_TENANT_DATA
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} chub_tenant </root/manifest/sql/chub/chub_tenant_data2.sql"
+    tags:
+      - check_maria
+      - set_db
+
+  - name: 4-3-13. Setup master 
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} chub_tenant </root/manifest/sql/aibot/maria_db_240117.sql"
+    tags:
+      - check_maria
+      - set_db
+
+  - name: 4-3-14. Setup master_smp
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} chub_tenant </root/manifest/sql/amp/amp.sql"
+    tags:
+      - check_maria
+      - set_db
+
+  - name: 4-3-14. Additional Authorization Setup
+    shell: "mysql --init-command='SET SESSION FOREIGN_KEY_CHECKS=0;SET UNIQUE_CHECKS=0;SET GLOBAL KEY_BUFFER_SIZE=4024128128; SET BACKUP_RESTORE_CONCURRENCY=64;SET BACKUP_WRITE_COMPRESSION_LEVEL=1;' -u root -p{{ MARIADB_ROOT_PASSWORD }} -h {{ MARIADB_SVC_IP.stdout }} </root/manifest/sql/chub/end_mariadb.sql"
+    tags:
+      - check_maria
+      - set_db
+  
+  # - name: 4-3-14. Postgres Setup Readyz
+  #   shell: kubectl cp /root/manifest/sql/aibot/dump-aicc_chatdb-202312061530.sql -n db postgresql-0:/tmp/aicc_chatdb.sql
+  #   tags:
+  #     - check_maria
+  #     - set_db
+  
+  # - name: 4-3-15. Get postgres init-password
+  #   shell: kubectl get secret -n db postgresql -ojsonpath='{.data.postgres-password}' | base64 -d
+  #   register: PGPASSWD_INIT
+  #   tags:
+  #     - check_maria
+  #     - set_db
+  
+  # - name: 4-3-16. Postgres Setup aicc_chatdb
+  #   shell: kubectl exec -it -n db postgresql-0 -- /bin/bash -c 'PGPASSWORD={{ PGPASSWD_INIT.stdout }} psql -Upostgres </tmp/aicc_chatdb.sql'
+  #   tags:
+  #     - check_maria
+  #     - set_db

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chub-agw-discovery-deployment
+  #namespace: vas-chub
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: chub-agw-discovery
+  template:
+    metadata:
+      labels:
+        app: chub-agw-discovery
+    spec:
+      containers:
+      - image: "{{ REGISTRY_URL }}:5000/vas/chub/agw/chub-agw-discovery:2.1.6"
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8761
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: chub-agw-discovery
+        ports:
+        - containerPort: 8761
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8761
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+      restartPolicy: Always
+      serviceAccount: chub-agw-discovery-account
+      serviceAccountName: chub-agw-discovery-account
