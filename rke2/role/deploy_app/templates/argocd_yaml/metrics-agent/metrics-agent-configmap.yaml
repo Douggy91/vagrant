@@ -4,4 +4,4 @@ metadata:
   name: metrics-agent-configmap
   namespace: monitoring
 data:
-  prom.url: "http://10.43.140.181:8080"
+  prom.url: "http://prometheus.{{ CONTROL_NODE_IP }}.nip.io"

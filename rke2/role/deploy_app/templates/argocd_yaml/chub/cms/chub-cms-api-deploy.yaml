@@ -17,7 +17,7 @@ spec:
       - env:
         - name: DEPLOY_DATE
           value: "2023-09-15 03:13:35"
-        image: "{{ REGISTRY_URL }}:5000/vas/chub/cms/chub-cms-api:0.0.160"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/chub/cms/chub-cms-api:0.0.160"
         imagePullPolicy: Always
         name: chub-cms-api-app
         ports:

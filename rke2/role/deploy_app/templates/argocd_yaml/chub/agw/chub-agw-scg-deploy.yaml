@@ -24,7 +24,7 @@ spec:
         - env:
           - name: DEPLOY_DATE
             value: "2023-09-08 08:59:59"
-          image: "{{ REGISTRY_URL }}:5000/vas/chub/agw/chub-agw-scg:0.0.189"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/chub/agw/chub-agw-scg:0.0.189"
           imagePullPolicy: Always
           name: chub-agw-scg-app
           ports:
@@ -49,7 +49,7 @@ spec:
               readOnly: true
               subPath: bootstrap.yaml
         - name: chub-agw-scg-fluent-bit
-          image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
           volumeMounts:
             - name: chub-agw-scg-vol
               mountPath: /app/logs

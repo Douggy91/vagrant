@@ -19,7 +19,7 @@ spec:
 
       containers:
       - name: aibot-master-app
-        image: "{{ REGISTRY_URL }}:5000/vas/aibot/master:{{ AIBOT_VER }}"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/aibot/master:{{ AIBOT_VER }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -34,7 +34,7 @@ spec:
                 name: aibot-master-configmap
                 key: ingress_chat_url
       - name: aibot-master-fluent-bit
-        image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
         volumeMounts:
         - name: server-aibot-master-log-volume
           mountPath: /jb_log

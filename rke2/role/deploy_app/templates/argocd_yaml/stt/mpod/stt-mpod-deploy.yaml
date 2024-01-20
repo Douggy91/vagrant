@@ -38,7 +38,7 @@ spec:
                   fieldPath: metadata.uid
             - name: LD_LIBRARY_PATH
               value: /tmp
-          image: "{{ REGISTRY_URL }}:5000/vas/stt/aicc-stt-mpod:1.0.0"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/stt/aicc-stt-mpod:1.0.0"
           name: kt-stt-mpod1-dep-aicd
           resources:
             requests:

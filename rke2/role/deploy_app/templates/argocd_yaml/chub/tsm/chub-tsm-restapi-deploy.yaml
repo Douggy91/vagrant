@@ -19,7 +19,7 @@ spec:
           value: DEPLOY_DATE_VALUE
         - name: SPRING_CONFIG_LOCATION
           value: /app/application.properties
-        image: "{{ REGISTRY_URL }}:5000/vas/chub/tsm/tts:0.1.21"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/chub/tsm/tts:0.1.21"
         imagePullPolicy: Always
         name: chub-tsm-restapi-app
         ports:

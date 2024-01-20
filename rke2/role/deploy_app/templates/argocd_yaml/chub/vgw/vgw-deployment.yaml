@@ -27,7 +27,7 @@ spec:
           value: ' -Dserver.port=8080 -Dfile.encoding=UTF-8 -Dotel.service.name=vgw'
         - name: TZ
           value: Asia/Seoul
-        image: "{{ REGISTRY_URL }}:5000/vas/vgw/vgw:0.0.1"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/vgw/vgw:0.0.1"
         imagePullPolicy: Always
         name: vgw
         ports:

@@ -1,5 +1,5 @@
 image:
-  registry: "{{ REGISTRY_URL }}:5000"
+  registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   repository: bitnami/fluent-bit
   tag: 2.2.0-debian-11-r0
 

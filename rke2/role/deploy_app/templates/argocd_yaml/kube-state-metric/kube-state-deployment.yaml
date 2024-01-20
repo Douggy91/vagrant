@@ -16,7 +16,7 @@ spec:
         app: kube-state-metrics
     spec:
       containers:
-      - image: "{{ REGISTRY_URL }}:5000/third-party/kube-state-metrics:v2.10.0"
+      - image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/third-party/kube-state-metrics:v2.10.0"
         args:
           - --metric-labels-allowlist=nodes=[*],namespaces=[*],services=[*],deployments=[*]
         livenessProbe:

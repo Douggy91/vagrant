@@ -38,7 +38,7 @@ spec:
           - 0
       containers:
         - name: grafana
-          image: "{{ REGISTRY_URL }}:5000/third-party/grafana:10.1.6"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/third-party/grafana:10.1.6"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000

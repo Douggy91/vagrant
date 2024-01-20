@@ -4087,7 +4087,7 @@ spec:
     spec:
       containers:
       - name: longhorn-manager
-        image: "{{ REGISTRY_URL }}:5000/rancher/longhorn-manager:v1.5.2"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-manager:v1.5.2"
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
@@ -4096,17 +4096,17 @@ spec:
         - -d
         - daemon
         - --engine-image
-        - "{{ REGISTRY_URL }}:5000/rancher/longhorn-engine:v1.5.2"
+        - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-engine:v1.5.2"
         - --instance-manager-image
-        - "{{ REGISTRY_URL }}:5000/rancher/longhorn-instance-manager:v1.5.2"
+        - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-instance-manager:v1.5.2"
         - --share-manager-image
-        - "{{ REGISTRY_URL }}:5000/rancher/longhorn-share-manager:v1.5.2"
+        - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-share-manager:v1.5.2"
         - --backing-image-manager-image
-        - "{{ REGISTRY_URL }}:5000/rancher/backing-image-manager:v1.5.2"
+        - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/backing-image-manager:v1.5.2"
         - --support-bundle-manager-image
-        - "{{ REGISTRY_URL }}:5000/rancher/support-bundle-kit:v0.0.27"
+        - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/support-bundle-kit:v0.0.27"
         - --manager-image
-        - "{{ REGISTRY_URL }}:5000/rancher/longhorn-manager:v1.5.2"
+        - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-manager:v1.5.2"
         - --service-account
         - longhorn-service-account
         ports:
@@ -4190,18 +4190,18 @@ spec:
     spec:
       initContainers:
         - name: wait-longhorn-manager
-          image: "{{ REGISTRY_URL }}:5000/rancher/longhorn-manager:v1.5.2"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-manager:v1.5.2"
           command: ['sh', '-c', 'while [ $(curl -m 1 -s -o /dev/null -w "%{http_code}" http://longhorn-backend:9500/v1) != "200" ]; do echo waiting; sleep 2; done']
       containers:
         - name: longhorn-driver-deployer
-          image: "{{ REGISTRY_URL }}:5000/rancher/longhorn-manager:v1.5.2"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-manager:v1.5.2"
           imagePullPolicy: IfNotPresent
           command:
           - longhorn-manager
           - -d
           - deploy-driver
           - --manager-image
-          - "{{ REGISTRY_URL }}:5000/rancher/longhorn-manager:v1.5.2"
+          - "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-manager:v1.5.2"
           - --manager-url
           - http://longhorn-backend:9500/v1
           env:
@@ -4218,17 +4218,17 @@ spec:
               fieldRef:
                 fieldPath: spec.serviceAccountName
           - name: CSI_ATTACHER_IMAGE
-            value: "{{ REGISTRY_URL }}:5000/rancher/csi-attacher:v4.2.0"
+            value: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/csi-attacher:v4.2.0"
           - name: CSI_PROVISIONER_IMAGE
-            value: "{{ REGISTRY_URL }}:5000/rancher/csi-provisioner:v3.4.1"
+            value: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/csi-provisioner:v3.4.1"
           - name: CSI_NODE_DRIVER_REGISTRAR_IMAGE
-            value: "{{ REGISTRY_URL }}:5000/rancher/csi-node-driver-registrar:v2.7.0"
+            value: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/csi-node-driver-registrar:v2.7.0"
           - name: CSI_RESIZER_IMAGE
-            value: "{{ REGISTRY_URL }}:5000/rancher/csi-resizer:v1.7.0"
+            value: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/csi-resizer:v1.7.0"
           - name: CSI_SNAPSHOTTER_IMAGE
-            value: "{{ REGISTRY_URL }}:5000/rancher/csi-snapshotter:v6.2.1"
+            value: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/csi-snapshotter:v6.2.1"
           - name: CSI_LIVENESS_PROBE_IMAGE
-            value: "{{ REGISTRY_URL }}:5000/rancher/livenessprobe:v2.9.0"
+            value: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/livenessprobe:v2.9.0"
       serviceAccountName: longhorn-service-account
       securityContext:
         runAsUser: 0
@@ -4271,7 +4271,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: longhorn-ui
-        image: "{{ REGISTRY_URL }}:5000/rancher/longhorn-ui:v1.5.2"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/rancher/longhorn-ui:v1.5.2"
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name : nginx-cache

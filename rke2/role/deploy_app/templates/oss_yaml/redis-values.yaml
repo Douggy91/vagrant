@@ -13,7 +13,7 @@
 ## @param global.redis.password Redis&reg; password (overrides `password`)
 ##
 global:
-  imageRegistry: "{{ REGISTRY_URL }}:5000"
+  imageRegistry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   ## E.g.
   ## imagePullSecrets:
   ##   - myRegistryKeySecretName
@@ -71,7 +71,7 @@ diagnosticMode:
 ## @param image.debug Enable image debug mode
 ##
 image:
-  registry: "{{ REGISTRY_URL }}:5000"
+  registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   repository: bitnami/redis-cluster
   tag: 7.2.3-debian-11-r1
   digest: ""
@@ -367,7 +367,7 @@ volumePermissions:
   ## @param volumePermissions.image.pullSecrets Specify docker-registry secret names as an array
   ##
   image:
-    registry: "{{ REGISTRY_URL }}:5000"
+    registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
     repository: bitnami/os-shell
     tag: 11-debian-11-r91
     digest: ""
@@ -873,7 +873,7 @@ metrics:
   ## @param metrics.image.pullSecrets Specify docker-registry secret names as an array
   ##
   image:
-    registry: "{{ REGISTRY_URL }}:5000"
+    registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
     repository: bitnami/redis-exporter
     tag: 1.55.0-debian-11-r2
     digest: ""
@@ -1042,7 +1042,7 @@ sysctlImage:
   ## @param sysctlImage.pullPolicy sysctlImage Init container pull policy
   ## @param sysctlImage.pullSecrets Specify docker-registry secret names as an array
   ##
-  registry: "{{ REGISTRY_URL }}:5000"
+  registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   repository: bitnami/os-shell
   tag: 11-debian-11-r91
   digest: ""

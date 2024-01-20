@@ -1,7 +1,7 @@
 architecture: standalone
 
 image:
-  registry: "{{ REGISTRY_URL }}:5000"
+  registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   repository: third-party/mariadb
   tag: 10.6.10-debian-11-r16
 
@@ -77,7 +77,7 @@ primary:
 # metrics:
 #   enabled: "true"
 #   image:
-#     registry: {{ REGISTRY_URL }}:5000
+#     registry: {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}
 #     repository: third-party/prom/mysqld-exporter
 #     tag: v0.15.0
 #   annotations:

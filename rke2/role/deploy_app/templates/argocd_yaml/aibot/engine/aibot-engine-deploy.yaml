@@ -19,7 +19,7 @@ spec:
 
       containers:
       - name: aibot-engine-app
-        image: 10.71.164.149:5000/vas/aibot/engine:{{ AIBOT_VER }}
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/aibot/engine:{{ AIBOT_VER }}"
         imagePullPolicy: Always
         resources:
           requests:
@@ -37,7 +37,7 @@ spec:
         - name: server-aibot-engine-log-volume
           mountPath: /jb_log
       - name: aibot-engine-fluent-bit
-        image: 10.71.164.149:5000/bitnami/fluent-bit:2.2.0
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
         volumeMounts:
         - name: app-aibot-engine-log-volume
           mountPath: /data/logs

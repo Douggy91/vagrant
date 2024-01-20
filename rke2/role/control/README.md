@@ -4,15 +4,6 @@ ansible 디렉토리의 INSTALL.sh 실행
 일반 실행 시, 디버그 쉘 출력 X, VAS 메세지만 출력 (진행 중)
 debug 실행 시, 기존 ansible debug 쉘 출력 (현재)
 
-## Template -> 미적용
-
-template:
-  src:
-  dest: 
-
-copy와 동일구조로 파일 전달 시, 대상 파일에 해당 변수 적용되어 전달.
-- 적용 대상 : Helm Values, kubernetes manifest.yaml
-
 ## ENV 파일  - role/rke2-cluster/vars/main.yaml 
 실행에 필요한 환경변수들로 기술된 변수들 이외에는 수정 불필요
 
@@ -45,12 +36,5 @@ REGISTRY_URL
 REGISTRY_ID
 REGISTRY_PASSWD
 
-### 단일 컨트롤 노드 시, MASTER (삭제예정)
-MASTER_NODE_IP: "10.71.162.155"
-#S3_PATH_BASE: "s3{{ ':' }}//s3-onebox-test-01-repository-01"
-NET_CONF_DIR: /etc/NetworkManager/conf.d
-NET_CONF_FILE: "{{ NET_CONF_DIR }}/rke2-canal.conf"
-RANCHER_ADMIN_PASSWORD: "admin12341234"
-MARIADB_ROOT_PASSWORD: "admin12341234"
-MYSQL_PASSWORD: "admin12341234"
+
 

@@ -17,7 +17,7 @@ spec:
         - env:
           - name: DEPLOY_DATE
             value: "2023-09-15 03:57:54"
-          image: "{{ REGISTRY_URL }}:5000/vas/chub/cms/chub-cms-ui:0.0.171"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/chub/cms/chub-cms-ui:0.0.171"
           imagePullPolicy: Always
           name: chub-cms-ui-app
           ports:
@@ -38,7 +38,7 @@ spec:
             - name: server-chub-cms-ui-log-volume
               mountPath: /var/log/nginx
         - name: chub-cms-ui-fluent-bit
-          image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
           volumeMounts:
             - name: server-chub-cms-ui-log-volume
               mountPath: /var/log/nginx

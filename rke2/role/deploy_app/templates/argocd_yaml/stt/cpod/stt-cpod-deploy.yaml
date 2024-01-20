@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: kt-stt-cpod-dep-aicd
-        image: "{{ REGISTRY_URL }}:5000/vas/stt/aicc-stt-cpod:1.0.0"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/stt/aicc-stt-cpod:1.0.0"
         resources:
           requests:
             cpu: "2"

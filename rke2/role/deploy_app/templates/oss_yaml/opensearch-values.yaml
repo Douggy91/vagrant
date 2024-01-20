@@ -11,7 +11,7 @@
 ## @param global.storageClass Global StorageClass for Persistent Volume(s)
 ##
 global:
-  imageRegistry: "{{ REGISTRY_URL }}:5000"
+  imageRegistry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   ## E.g.
   ## imagePullSecrets:
   ##   - myRegistryKeySecretName
@@ -177,7 +177,7 @@ useIstioLabels: true
 ## @param image.debug Enable OpenSearch image debug mode
 ##
 image:
-  registry: "{{ REGISTRY_URL }}:5000"
+  registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   repository: bitnami/opensearch
   tag: 2.11.0-debian-11-r1
   digest: ""
@@ -2214,7 +2214,7 @@ volumePermissions:
   ## @param volumePermissions.image.pullSecrets Init container volume-permissions image pull secrets
   ##
   image:
-    registry: "{{ REGISTRY_URL }}:5000"
+    registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
     repository: bitnami/os-shell
     tag: 11-debian-11-r91
     digest: ""
@@ -2261,7 +2261,7 @@ sysctlImage:
   ## @param sysctlImage.pullPolicy Kernel settings modifier image pull policy
   ## @param sysctlImage.pullSecrets Kernel settings modifier image pull secrets
   ##
-  registry: "{{ REGISTRY_URL }}:5000"
+  registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
   repository: bitnami/os-shell
   tag: 11-debian-11-r91
   digest: ""
@@ -2315,7 +2315,7 @@ dashboards:
   ## @param dashboards.image.debug Enable OpenSearch Dashboards image debug mode
   ##
   image:
-    registry: "{{ REGISTRY_URL }}:5000"
+    registry: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
     repository: bitnami/opensearch-dashboards
     tag: 2.11.0-debian-11-r1
     digest: ""

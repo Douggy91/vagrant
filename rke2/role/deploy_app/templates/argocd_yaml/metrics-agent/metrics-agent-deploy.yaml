@@ -19,7 +19,7 @@ spec:
 
       containers:
       - name: metrics-agent-app
-        image: "{{ REGISTRY_URL }}:5000/test/metrics-agent:0.0.1"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/test/metrics-agent:0.0.1"
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -34,7 +34,7 @@ spec:
                 name: metrics-agent-configmap
                 key: prom.url
       - name: metrics-agent-fluent-bit
-        image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
         volumeMounts:
         - name: metrics-agent-server-log-volume
           mountPath: /logs

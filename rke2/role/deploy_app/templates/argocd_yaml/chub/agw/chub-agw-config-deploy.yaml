@@ -17,7 +17,7 @@ spec:
         - env:
           - name: DEPLOY_DATE
             value: "2023-06-27 04:37:27"
-          image: "{{ REGISTRY_URL }}:5000/vas/chub/agw/chub-agw-config:0.0.72"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/chub/agw/chub-agw-config:0.0.72"
           imagePullPolicy: Always
           name: chub-agw-config-app
           ports:
@@ -38,7 +38,7 @@ spec:
             - name: chub-agw-config-pvc
               mountPath: /app/logs
         - name: chub-agw-config-fluent-bit
-          image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
           volumeMounts:
             - name: chub-agw-config-pvc
               mountPath: /app/logs

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: prometheus
-          image: "{{ REGISTRY_URL }}:5000/prometheus:v2.45.2"
+          image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/prometheus:v2.45.2"
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus/"

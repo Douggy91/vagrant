@@ -7,7 +7,7 @@ global:
     # -- Set the global logging level. One of: `debug`, `info`, `warn` or `error`
     level: info
   image:
-    repository: "{{ REGISTRY_URL }}:5000/third-party/argocd"
+    repository: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/third-party/argocd"
     tag: v2.8.4
 configs:
   cm:
@@ -69,9 +69,9 @@ server:
     enabled: false
 dex:
   image:
-    repository: "{{ REGISTRY_URL }}:5000/third-party/dex"
+    repository: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/third-party/dex"
     tag: v2.37.0
 redis:
   image:
-    repository: "{{ REGISTRY_URL }}:5000/third-party/redis"
+    repository: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/third-party/redis"
     tag: 7.0.13-alpine

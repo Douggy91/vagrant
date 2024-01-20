@@ -14,7 +14,7 @@ spec:
         app: chub-agw-discovery
     spec:
       containers:
-      - image: "{{ REGISTRY_URL }}:5000/vas/chub/agw/chub-agw-discovery:2.1.6"
+      - image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/chub/agw/chub-agw-discovery:2.1.6"
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

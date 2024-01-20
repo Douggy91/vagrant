@@ -26,7 +26,7 @@ spec:
           limits:
             cpu: "2"
             memory: "4Gi"
-        image: "{{ REGISTRY_URL }}:5000/vas/aibot/scheduler:{{ AIBOT_VER }}"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/aibot/scheduler:{{ AIBOT_VER }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -35,7 +35,7 @@ spec:
         - name: server-aibot-scheduler-log-volume
           mountPath: /jb_log
       - name: aibot-scheduler-fluent-bit
-        image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
         volumeMounts:
         - name: server-aibot-scheduler-log-volume
           mountPath: /jb_log

@@ -19,7 +19,7 @@ spec:
 
       containers:
       - name: aibot-cms-app
-        image: "{{ REGISTRY_URL }}:5000/vas/aibot/cms:{{ AIBOT_VER }}"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/vas/aibot/cms:{{ AIBOT_VER }}"
         imagePullPolicy: Always
         resources:
           requests:
@@ -41,7 +41,7 @@ spec:
                 name: aibot-master-configmap
                 key: ingress_chat_url
       - name: aibot-cms-fluent-bit
-        image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+        image: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/bitnami/fluent-bit:2.2.0"
         volumeMounts:
         - name: server-aibot-cms-log-volume
           mountPath: /jb_log
