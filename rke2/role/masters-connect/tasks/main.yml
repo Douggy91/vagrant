@@ -1,0 +1,13 @@
+---
+# tasks file for rke2-cluster
+- name: install rke2-master connect
+  include_tasks: master_connect.yaml
+  tags: 
+    - masters-connect
+    - system-params
+    - resource-copy
+    - resource-install
+    - network-config
+    - rke2-init
+    - config-kubeconfig
+    - config-kubetools

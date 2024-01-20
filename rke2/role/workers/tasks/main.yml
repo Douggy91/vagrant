@@ -1,0 +1,11 @@
+---
+- name: install rke2-worker
+  include_tasks: worker_connect.yaml
+  tags: 
+    - worker-connect
+    - system-params
+    - resource-copy
+    - resource-install
+    - network-config
+    - rke2-init
+    - config-kubeconfig

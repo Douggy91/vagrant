@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chub-sgw-deployment
+  #namespace: vas-chub
+  labels:
+    app: chub-sgw-app
+    workload.user.cattle.io/workloadselector: apps.deployment-chub-sgw
+  annotations:
+    field.cattle.io/description: CHUB SGW
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-chub-sgw
+  template:
+    metadata:
+      annotations:
+        cattle.io/timestamp: "2023-04-13T03:11:44Z"
+        prometheus.io/scrape: "true"
+        prometheus.io/scheme: http
+        prometheus.io/port: "8000"
+        prometheus.io/path: /metrics
+      labels:
+        app: chub-sgw-app
+        workload.user.cattle.io/workloadselector: apps.deployment-chub-sgw
+        chub/app: SGW
+    spec:
+      containers:
+        - image: "{{ REGISTRY_URL }}:5000/vas/chub/sgw/sgw:0.8.3"
+          imagePullPolicy: IfNotPresent
+          name: chub-sgw-app
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /app/aicc/VGW/key/chub-sgw-google-stt-key.json
+            - name: LD_PRELOAD
+              value: /lib/libgcompat.so.0
+          ports:
+            - containerPort: 19090
+              name: stt19090
+              protocol: TCP
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+          volumeMounts:
+            - mountPath: /app/aicc/SGW/config
+              name: chub-sgw-configmap
+            - mountPath: /app/aicc/VGW/key/chub-sgw-google-stt-key.json
+              name: chub-sgw-google-stt-key-json-vol
+              subPath: chub-sgw-google-stt-key.json
+            - name: server-chub-sgw-log-volume
+              mountPath: /app/aicc/SGW/log
+        - name: chub-sgw-fluent-bit
+          image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+          volumeMounts:
+            - name: server-chub-sgw-log-volume
+              mountPath: /app/aicc/SGW/log
+            - name: chub-sgw-fluentbit-config
+              mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+              subPath: fluent-bit.conf
+            - name: chub-sgw-fluentbit-parser
+              mountPath: /opt/bitnami/fluent-bit/conf/chub-parsers.conf
+              subPath: chub-parsers.conf
+      imagePullSecrets:
+        - name: nexus
+      restartPolicy: Always
+      volumes:
+        - name: server-chub-sgw-log-volume
+          emptyDir: {}
+        - name: chub-sgw-fluentbit-config
+          configMap:
+            name: chub-sgw-fluentbit-configmap
+            items:
+              - key: fluent-bit.conf
+                path: fluent-bit.conf
+        - name: chub-sgw-fluentbit-parser
+          configMap:
+            name: chub-sgw-fluentbit-configmap
+            items:
+              - key: chub-parsers.conf
+                path: chub-parsers.conf
+        - configMap:
+            defaultMode: 420
+            name: chub-sgw-configmap
+            optional: true
+          name: chub-sgw-configmap
+        - configMap:
+            defaultMode: 420
+            name: chub-sgw-google-stt-key-json
+          name: chub-sgw-google-stt-key-json-vol

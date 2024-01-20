@@ -1,108 +1,106 @@
-- hosts: masters-init  
-  tasks:
-  - name: 4-2-1. Directory setup
-    file:
-      path: "/root/helm_chart"
-      state: directory
-    tags:
-      - oss_setup
-      - set_resource
-  # DB 배포에 필요한 .sql .bak 파일을 마스터 노드로 전달합니다.
-  - name: 4-2-2. Download MariaDB client, Dump, DB Schema file
-    copy:
-      src: "{{ item.src}}"
-      dest: "{{ item.dest }}"
-    with_items:
-      - { src: "{{ LOCAL_PATH.BASE }}/db/mariadb_client", dest: /root/ }
-      - { src: /root/ansible/git-core-2.39.3-1.el8_8.x86_64.rpm, dest: /root/git-core-2.39.3-1.el8_8.x86_64.rpm }
-    tags:
-      - oss_setup
-      - set_resource
-  
-   # Pod 접근없이 mariaDB를 핸들링 할 수 있도록 Client 명령어들을 설치합니다.
-  - name: 4-2-3. Install MariaDB client in private
-    dnf:
-      name: "{{ item }}"
-      state: present
-      disable_gpg_check: yes
-    with_items:
-      - /root/mariadb_client/libpmem-1.6.1-1.el8.x86_64.rpm
-      - /root/mariadb_client/perl-DBI-1.641-4.module+el8.6.0+891+677074cb.x86_64.rpm
-      - "/root/mariadb_client/MariaDB-client-10.6.10-1.el8.x86_64.rpm, /root/mariadb_client/MariaDB-common-10.6.10-1.el8.x86_64.rpm, /root/mariadb_client/MariaDB-shared-10.6.10-1.el8.x86_64.rpm"
-      - "/root/git-core-2.39.3-1.el8_8.x86_64.rpm"
-    tags:
-      - oss_setup
-      - set_resource
-  
-  - name: 4-2-4. git clone manifest repo
-    shell: "git clone {{ ARGO_CONNECTED_SCM }} /root/manifest/"
-    tags:
-      - oss_setup
-      - set_resource
-  
-  - name: 4-2-5. Copy yaml template"
-    template:
-      src: "oss_yaml/{{ item.yaml }}"
-      dest: "oss_yaml/{{ item.dest }}"
-    with_items:
-      - { yaml: argocd-values.yaml, dest: /root/manifest/oss/argocd/argocd-values.yaml }
-      - { yaml: mariadb-values.yaml, dest: /root/manifest/oss/mariadb/mariadb-values.yaml }
-      - { yaml: opensearch-values.yaml, dest: /root/manifest/oss/opensearch/opensearch-values.yaml }
-  #    - { yaml: postgresql-values.yaml, dest: /root/manifest/oss/postgresql/postgresql-values.yaml }
-      - { yaml: redis-values.yaml, dest: /root/manifest/oss/redis/redis-values.yaml }
-      - { yaml: solr-values.yaml, dest: /root/manifest/oss/solr/solr-values.yaml }
-      - { yaml: dashboard-ingress.yaml, dest: /root/manifest/oss/opensearch/dashboard-ingress.yaml }
-      - { yaml: grafana-ingress.yaml, dest: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml }
-      - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
-  
-  # Helm에 Nexus에 게시된 Private Helm 저장소를 추가합니다.
-  - name: 4-2-6. Set helm repo
-    shell: |
-      helm repo add aicc http://{{ REGISTRY_URL }}:{{ HELM_PORT }}/repository/helm-hosted
-      sed -i 's/HOSTIP/{{ ansible_facts.default_ipv4.address }}/g' /root/manifest/oss/argocd/argocd-values.yaml
-    tags:
-      - oss_setup
-      - set_helm
-  
-  # 오픈소스 앱들 중 DB 역할을 하는 어플리케이션들을 배포합니다.
-  - name: 4-2-7. OpenSource Deploy
-    shell: helm install {{ item.name }} aicc/{{ item.repo_name }} -n {{ item.ns }} --create-namespace -f {{ item.values_file }} --timeout=10m0s
-    with_items:
-      - { ns: argocd, name: argocd, repo_name: argo-cd, values_file: /root/manifest/oss/argocd/argocd-values.yaml }
-      - { ns: db, name: mariadb, repo_name: mariadb, values_file: /root/manifest/oss/mariadb/mariadb-values.yaml }
-      - { ns: opensearch, name: opensearch, repo_name: opensearch, values_file: /root/manifest/oss/opensearch/opensearch-values.yaml }
-  #    - { ns: db, name: postgresql, repo_name: postgresql, values_file: /root/manifest/oss/postgresql/postgresql-values.yaml }
-      - { ns: redis, name: redis, repo_name: redis-cluster, values_file: /root/manifest/oss/redis/redis-values.yaml }
-      - { ns: solr, name: solr, repo_name: solr, values_file: /root/manifest/oss/solr/solr-values.yaml }
-    tags:
-      - oss_setup
-      - deploy_db
-  
-  # 외부 서비스에 대한 모니터링을 돕는 하는 BlackBox exporter를 배포합니다.
-  - name: 4-2-8. blackbox exporter
-    shell: helm install blackbox-exporter aicc/prometheus-blackbox-exporter -n cattle-monitoring-system --create-namespace --set image.registry="{{ REGISTRY_URL }}:5000" --set image.repository="third-party/prom/blackbox-exporter" --set image.tags="{{ BLACKBOX_EXPORTER_VERS }}"
-    tags:
-      - oss_setup
-      - monitoring
-  
-  # K8S Management 도구인 랜처와 텍스트 데이터 수집 역할을 하는 Solr를 배포합니다.
-  - name: 4-2-9. Rancher & Monitoring & Solr Deploy
-    shell: "{{ item }}"
-    with_items:
-      - "helm install rancher aicc/rancher -n cattle-system --set hostname={{ ansible_facts.default_ipv4.address }}.nip.io --set replicas=1 --set bootstrapPassword={{ RANCHER_ADMIN_PASSWORD }}"
-   #   - "helm install rancher-monitoring-crd aicc/rancher-monitoring-crd -n cattle-monitoring-system --version=102.0.1+up40.1.2 --timeout=10m0s"
-   #   - "helm install rancher-monitoring aicc/rancher-monitoring -n cattle-monitoring-system -f /root/manifest/oss/rancher-monitoring/rancher-monitoring-values.yaml --version=102.0.1+up40.1.2 --timeout=10m0s"
-      - "kubectl apply -k /root/manifest/oss/solr/ -n solr"
-    tags:
-      - oss_setup
-      - monitoring
-  
-  # K8S Opensearch와 Grafana Dashboard를 배포합니다.
-  - name: 4-2-10. Dashboards Deploy
-    shell: kubectl apply -f {{ item.values_file }} -n {{ item.ns }}
-    with_items:
-      - { values_file: /root/manifest/oss/opensearch/dashboard-ingress.yaml, ns: opensearch }
-  #    - { values_file: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml, ns: cattle-monitoring-system }
-    tags:
-      - oss_setup
-      - deploy_dashboard
+- name: 4-2-1. Directory setup
+  file:
+    path: "/root/helm_chart"
+    state: directory
+  tags:
+    - oss_setup
+    - set_resource
+# DB 배포에 필요한 .sql .bak 파일을 마스터 노드로 전달합니다.
+- name: 4-2-2. Download MariaDB client, Dump, DB Schema file
+  copy:
+    src: "{{ item.src}}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "{{ LOCAL_PATH.BASE }}/db/mariadb_client", dest: /root/ }
+    - { src: /root/ansible/git-core-2.39.3-1.el8_8.x86_64.rpm, dest: /root/git-core-2.39.3-1.el8_8.x86_64.rpm }
+  tags:
+    - oss_setup
+    - set_resource
+
+  # Pod 접근없이 mariaDB를 핸들링 할 수 있도록 Client 명령어들을 설치합니다.
+- name: 4-2-3. Install MariaDB client in private
+  dnf:
+    name: "{{ item }}"
+    state: present
+    disable_gpg_check: yes
+  with_items:
+    - /root/mariadb_client/libpmem-1.6.1-1.el8.x86_64.rpm
+    - /root/mariadb_client/perl-DBI-1.641-4.module+el8.6.0+891+677074cb.x86_64.rpm
+    - "/root/mariadb_client/MariaDB-client-10.6.10-1.el8.x86_64.rpm, /root/mariadb_client/MariaDB-common-10.6.10-1.el8.x86_64.rpm, /root/mariadb_client/MariaDB-shared-10.6.10-1.el8.x86_64.rpm"
+    - "/root/git-core-2.39.3-1.el8_8.x86_64.rpm"
+  tags:
+    - oss_setup
+    - set_resource
+
+- name: 4-2-4. git clone manifest repo
+  shell: "git clone {{ ARGO_CONNECTED_SCM }} /root/manifest/"
+  tags:
+    - oss_setup
+    - set_resource
+
+- name: 4-2-5. Copy yaml template"
+  template:
+    src: "oss_yaml/{{ item.yaml }}"
+    dest: "oss_yaml/{{ item.dest }}"
+  with_items:
+    - { yaml: argocd-values.yaml, dest: /root/manifest/oss/argocd/argocd-values.yaml }
+    - { yaml: mariadb-values.yaml, dest: /root/manifest/oss/mariadb/mariadb-values.yaml }
+    - { yaml: opensearch-values.yaml, dest: /root/manifest/oss/opensearch/opensearch-values.yaml }
+#    - { yaml: postgresql-values.yaml, dest: /root/manifest/oss/postgresql/postgresql-values.yaml }
+    - { yaml: redis-values.yaml, dest: /root/manifest/oss/redis/redis-values.yaml }
+    - { yaml: solr-values.yaml, dest: /root/manifest/oss/solr/solr-values.yaml }
+    - { yaml: dashboard-ingress.yaml, dest: /root/manifest/oss/opensearch/dashboard-ingress.yaml }
+    - { yaml: grafana-ingress.yaml, dest: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml }
+    - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
+
+# Helm에 Nexus에 게시된 Private Helm 저장소를 추가합니다.
+- name: 4-2-6. Set helm repo
+  shell: |
+    helm repo add aicc http://{{ REGISTRY_URL }}:{{ HELM_PORT }}/repository/helm-hosted
+    sed -i 's/HOSTIP/{{ ansible_facts.default_ipv4.address }}/g' /root/manifest/oss/argocd/argocd-values.yaml
+  tags:
+    - oss_setup
+    - set_helm
+
+# 오픈소스 앱들 중 DB 역할을 하는 어플리케이션들을 배포합니다.
+- name: 4-2-7. OpenSource Deploy
+  shell: helm install {{ item.name }} aicc/{{ item.repo_name }} -n {{ item.ns }} --create-namespace -f {{ item.values_file }} --timeout=10m0s
+  with_items:
+    - { ns: argocd, name: argocd, repo_name: argo-cd, values_file: /root/manifest/oss/argocd/argocd-values.yaml }
+    - { ns: db, name: mariadb, repo_name: mariadb, values_file: /root/manifest/oss/mariadb/mariadb-values.yaml }
+    - { ns: opensearch, name: opensearch, repo_name: opensearch, values_file: /root/manifest/oss/opensearch/opensearch-values.yaml }
+#    - { ns: db, name: postgresql, repo_name: postgresql, values_file: /root/manifest/oss/postgresql/postgresql-values.yaml }
+    - { ns: redis, name: redis, repo_name: redis-cluster, values_file: /root/manifest/oss/redis/redis-values.yaml }
+    - { ns: solr, name: solr, repo_name: solr, values_file: /root/manifest/oss/solr/solr-values.yaml }
+  tags:
+    - oss_setup
+    - deploy_db
+
+# 외부 서비스에 대한 모니터링을 돕는 하는 BlackBox exporter를 배포합니다.
+- name: 4-2-8. blackbox exporter
+  shell: helm install blackbox-exporter aicc/prometheus-blackbox-exporter -n cattle-monitoring-system --create-namespace --set image.registry="{{ REGISTRY_URL }}:5000" --set image.repository="third-party/prom/blackbox-exporter" --set image.tags="{{ BLACKBOX_EXPORTER_VERS }}"
+  tags:
+    - oss_setup
+    - monitoring
+
+# K8S Management 도구인 랜처와 텍스트 데이터 수집 역할을 하는 Solr를 배포합니다.
+- name: 4-2-9. Rancher & Monitoring & Solr Deploy
+  shell: "{{ item }}"
+  with_items:
+    - "helm install rancher aicc/rancher -n cattle-system --set hostname={{ ansible_facts.default_ipv4.address }}.nip.io --set replicas=1 --set bootstrapPassword={{ RANCHER_ADMIN_PASSWORD }}"
+  #   - "helm install rancher-monitoring-crd aicc/rancher-monitoring-crd -n cattle-monitoring-system --version=102.0.1+up40.1.2 --timeout=10m0s"
+  #   - "helm install rancher-monitoring aicc/rancher-monitoring -n cattle-monitoring-system -f /root/manifest/oss/rancher-monitoring/rancher-monitoring-values.yaml --version=102.0.1+up40.1.2 --timeout=10m0s"
+    - "kubectl apply -k /root/manifest/oss/solr/ -n solr"
+  tags:
+    - oss_setup
+    - monitoring
+
+# K8S Opensearch와 Grafana Dashboard를 배포합니다.
+- name: 4-2-10. Dashboards Deploy
+  shell: kubectl apply -f {{ item.values_file }} -n {{ item.ns }}
+  with_items:
+    - { values_file: /root/manifest/oss/opensearch/dashboard-ingress.yaml, ns: opensearch }
+#    - { values_file: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml, ns: cattle-monitoring-system }
+  tags:
+    - oss_setup
+    - deploy_dashboard

@@ -1,0 +1,49 @@
+---
+# tasks file for rke2-cluster
+- name: set labels
+  include_tasks: labels.yaml
+  tags: 
+    - labels
+    - application
+    - roles
+    - taints
+
+- name: deploy oss
+  include_tasks: oss_setup.yaml
+  tags: 
+    - oss_setup
+    - set_resource
+    - set_helm
+    - deploy_db
+    - monitoring
+    - deploy_dashboard
+
+- name: set-db
+  include_tasks: check_maria.yaml
+  tags: 
+    - check_maria
+    - wait_maria
+    - set_db
+    - cleanup_db
+
+- name: deploy argocd application
+  include_tasks: deploy_argocd.yaml
+  tags: 
+    - deploy_argocd
+    - get_resource
+    - git_resource
+    - set_argocd
+    - deploy_chub
+    - deploy_tts
+    - deploy_stt
+    - deploy_aibot
+    - deploy_amp
+
+- name: deploy monitoring application
+  include_tasks: deploy_monitoring.yaml
+  tags: 
+    - deploy_monitoring
+    - otel-operator
+    - fluent-bit
+    - vas-chub
+    - k8s-prom

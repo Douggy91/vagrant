@@ -62,6 +62,24 @@
           listen 6443;
           proxy_pass stream_rke2_6443;
         }
+        upstream stream_rke2_80 {
+          server rke2-master-node01:80;
+          server rke2-master-node02:80;
+          server rke2-master-node03:80;
+        }
+        server {
+          listen 80;
+          proxy_pass stream_rke2_80;
+        }
+        upstream stream_rke2_443 {
+          server rke2-master-node01:443;
+          server rke2-master-node02:443;
+          server rke2-master-node03:443;
+        }
+        server {
+          listen 443;
+          proxy_pass stream_rke2_443;
+        }
       }
   tags:
     - control
@@ -153,7 +171,7 @@
     - control
     - docker    
 
-- name: 0-3-6-1. docker daemon.json
+- name: 0-3-6. docker daemon.json
   copy:
     dest: /etc/docker/daemon.json
     content: |
@@ -162,9 +180,24 @@
       }
   tags:
     - control
+    - docker 
+
+- name: 0-3-7. docker daemon.json
+  copy:
+    dest: /root/.docker/config.json
+    content: |
+      {
+              "auths": {
+                      "{{ REGISTRY_URL }}:5000": {
+                              "auth": "YWRtaW46YWRtaW4xMjM0MTIzNA=="
+                      }
+              }
+      }
+  tags:
+    - control
     - docker    
 
-- name: 0-3-6-2. systemctl enable docker-service
+- name: 0-3-8. systemctl enable docker-service
   systemd_service:
     name: docker
     state: restarted
@@ -173,66 +206,21 @@
     - control
     - docker    
 
-- name: 0-3-6-3. docker login 
+- name: 0-3-9. docker login 
   shell: |
-    docker login 10.71.164.188:5000 --username admin --password admin12341234
+    docker login {{ REGISTRY_URL }}:5000 --username admin --password admin12341234
   tags:
     - control
     - docker 
 
-- name: 0-3-7. Load Images
+- name: 0-3-10. Load Images
   shell: |
     docker load -i {{ LOCAL_PATH.PACKAGES }}/docker/sonatype-nexus.tar.gz
   tags:
     - control
     - docker  
 
-- name: 0-4-1. gitea compose yaml create
-  copy:
-    dest: /opt/gitea/docker-compose.yml
-    content: |
-      version: '3.9'
-      services:
-        gitea:
-          image: {{ REGISTRY_URL }}:5000/third-party/gitea:1.20
-          ports:
-          - 3000:3000
-          volumes:
-            - /opt/gitea/data:/data
-            - /var/lib/gitea:/var/lib/gitea
-          depends_on:
-            - db
-          restart: always
-        db:
-          image: {{ REGISTRY_URL }}:5000/third-party/mariadb:10.6.10-debian-11-r16
-          ports:
-            - 3306:3306
-          environment:
-          # Database Setup (DB: gitea, ID: {{ GITEA_USER }}, PWD: {{ GITEA_PASSWD }}, ROOT PWD: {{ GITEA_PASSWD }})
-          - MYSQL_ROOT_PASSWORD={{ MYSQL_PASSWORD }}
-          - MYSQL_DATABASE=gitea
-          - MYSQL_USER=admin
-          - MYSQL_PASSWORD={{ MYSQL_PASSWORD }}
-          volumes:
-            - /var/lib/mysql:/var/lib/mysql
-          restart: always
-  tags:
-    - control
-    - gitea     
-
-- name: 0-4-2. chmod Docker-compose yml - gitea
-  shell: chmod +x /opt/gitea/docker-compose.yml
-  tags:
-    - control
-    - gitea     
-
-- name: 0-4-3. Run Gitea, Mariadb from Docker Compose -gitea
-  shell: docker compose -f /opt/gitea/docker-compose.yml up -d
-  tags:
-    - control
-    - gitea      
-
-- name: 0-5-1. create nexus docker-compose.yml
+- name: 0-4-1. create nexus docker-compose.yml
   copy:
     dest: "{{ NEXUS_DIR }}/docker-compose.yml"
     content: |
@@ -260,15 +248,15 @@
     - control
     - nexus     
 
-- name: 0-5-2. run nexus image from docker compose
+- name: 0-4-2. run nexus image from docker compose
   shell: docker compose -f {{ NEXUS_DIR }}/docker-compose.yml up -d
   tags:
     - control
-    - nexus   
+    - nexus  
 
-- name: Create Gitea Docker-Compose.yml
+- name: 0-5-1. gitea compose yaml create
   copy:
-    dest: /opt/gitea/docker-compose.yml
+    dest: "{{ GITEA_DIR }}/docker-compose.yml"
     content: |
       version: '3.9'
       services:
@@ -277,7 +265,7 @@
           ports:
           - 3000:3000
           volumes:
-            - /opt/gitea/data:/data 
+            - {{ GITEA_DIR }}/data:/data
             - /var/lib/gitea:/var/lib/gitea
           depends_on:
             - db
@@ -295,13 +283,18 @@
           volumes:
             - /var/lib/mysql:/var/lib/mysql
           restart: always
-  tags: install_base
-  
-- name: chmod Docker-compose
-  shell: chmod +x /opt/gitea/docker-compose.yml
-  tags: install_base
-  
-- name: Run Gitea, Mariadb from Docker Compose
-  shell: docker compose -f /opt/gitea/docker-compose.yml up -d
-  tags: install_gitea  
+  tags:
+    - control
+    - gitea     
 
+- name: 0-5-2. chmod Docker-compose yml - gitea
+  shell: "chmod +x {{ GITEA_DIR }}/docker-compose.yml"
+  tags:
+    - control
+    - gitea     
+
+- name: 0-5-3. Run Gitea, Mariadb from Docker Compose -gitea
+  shell: "docker compose -f {{ GITEA_DIR }}/docker-compose.yml up -d"
+  tags:
+    - control
+    - gitea      

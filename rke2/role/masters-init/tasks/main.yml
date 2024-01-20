@@ -1,0 +1,13 @@
+---
+- name: install rke2-master init
+  include_tasks: master_init.yaml
+  tags: 
+    - masters-init
+    - system-params
+    - resource-copy
+    - resource-install
+    - network-config
+    - rke2-init
+    - config-kubeconfig
+    - prepare-connect
+    - config-kubetools

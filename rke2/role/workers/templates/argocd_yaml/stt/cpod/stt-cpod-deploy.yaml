@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stt-cpod-deployment
+  #namespace: vas-stt
+  labels:
+    app: stt-cpod-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stt-cpod-app
+  template:
+    metadata:
+      labels:
+        app: stt-cpod-app
+    spec:
+      containers:
+      - name: kt-stt-cpod-dep-aicd
+        image: "{{ REGISTRY_URL }}:5000/vas/stt/aicc-stt-cpod:1.0.0"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        env:
+        - name: MY_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: MY_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: MY_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: MY_ID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        - name: LD_LIBRARY_PATH
+          value: /tmp
+        ports:
+          - name: rt-stt
+            containerPort: 37171
+            protocol: TCP
+          - name: srt-stt
+            containerPort: 38081
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /home/aicadm/AICC/config
+            name: kt-stt-cpod-vol-aicd
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 38081
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 38081
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+      nodeSelector:
+        application/instance-type: vas-stt
+      volumes:
+        - configMap:
+            defaultMode: 0644
+            name: stt-cpod-configmap
+          name: kt-stt-cpod-vol-aicd

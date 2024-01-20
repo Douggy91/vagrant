@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chub-agw-scg-deployment
+  #namespace: vas-chub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chub-agw-scg-app
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
+        prometheus.io/path: /
+        prometheus.io/port: "9464"
+        prometheus.io/scheme: http
+        prometheus.io/scrape: "true"
+      labels:
+        app: chub-agw-scg-app
+        chub/app: AGW
+    spec:
+      containers:
+        - env:
+          - name: DEPLOY_DATE
+            value: "2023-09-08 08:59:59"
+          image: "{{ REGISTRY_URL }}:5000/vas/chub/agw/chub-agw-scg:0.0.189"
+          imagePullPolicy: Always
+          name: chub-agw-scg-app
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "4"
+            limits:
+              memory: "8Gi"
+              cpu: "4"
+          volumeMounts:
+            - name: chub-agw-scg-vol
+              mountPath: /app/logs
+            - name: application-config
+              mountPath: /app/application.properties
+              readOnly: true
+              subPath: application.properties
+            - name: bootstrap-config
+              mountPath: /app/bootstrap.yml
+              readOnly: true
+              subPath: bootstrap.yaml
+        - name: chub-agw-scg-fluent-bit
+          image: "{{ REGISTRY_URL }}:5000/bitnami/fluent-bit:2.2.0"
+          volumeMounts:
+            - name: chub-agw-scg-vol
+              mountPath: /app/logs
+            - name: chub-agw-scg-fluentbit-config
+              mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+              subPath: fluent-bit.conf
+            - name: chub-agw-scg-fluentbit-parser
+              mountPath: /opt/bitnami/fluent-bit/conf/chub-parsers.conf
+              subPath: chub-parsers.conf
+      volumes:
+        - name: chub-agw-scg-fluentbit-config
+          configMap:
+            name: chub-agw-scg-fluentbit-configmap
+            items:
+              - key: fluent-bit.conf
+                path: fluent-bit.conf
+        - name: chub-agw-scg-fluentbit-parser
+          configMap:
+            name: chub-agw-scg-fluentbit-configmap
+            items:
+              - key: chub-parsers.conf
+                path: chub-parsers.conf
+        - name: chub-agw-scg-vol
+          persistentVolumeClaim:
+            claimName: chub-agw-scg-pvc
+        - name: application-config
+          configMap:
+            name: chub-agw-scg-configmap
+            items:
+              - key: application.properties
+                path: application.properties
+        - name: bootstrap-config
+          configMap:
+            name: chub-agw-scg-configmap
+            items:
+              - key: bootstrap.yaml
+                path: bootstrap.yaml

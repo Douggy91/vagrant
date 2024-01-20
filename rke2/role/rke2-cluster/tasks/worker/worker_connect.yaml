@@ -1,370 +1,368 @@
-- hosts: workers  
-  tasks:
-  - name: 3-0-1. Copy Kernel Params
-    file:
-      src: sysctl.conf
-      dest: /etc/sysctl.conf
-    tags:
-      - worker-connect
-      - system-params
-  
-  - name: 3-0-2. apply Kernel Params
-    shell: |
-      sysctl -p /etc/sysctl.conf
-    tags:
-      - worker-connect
-      - system-params
-  
-  ## 02_download_resources
-  - name: 3-1-1. Make necessary directories
-    file:
-      path: "{{ item }}"
-      state: directory
-    with_items:
-      - /var/log/vas
-      - /root/rke2-artifacts
-      - "{{ LOCAL_PATH.PACKAGES }}"
-      - /root/ansible
-    tags:
-      - worker-connect
-      - resource-copy    
-  
-  - name: 3-1-2. Copy Hostfile
-    copy:
-      src: /etc/hosts
-      dest: /etc/hosts
-    tags:
-      - worker-connect
-      - resource-copy    
-  
-  - name: 3-1-3. Copy resources
-    copy:
-      src: "{{ LOCAL_PATH.PACKAGES }}/{{ item }}"
-      dest: "{{ LOCAL_PATH.PACKAGES }}"
-    with_items:
-      - "rke2-required" 
-      - "rke2-airgap"
-      - "k9s"
-      - "rancher"
-      - "default"
-      - "longhorn"
-    tags:
-      - worker-connect
-      - resource-copy    
-  
-  - name: 3-1-4. Move RKE2 artifacts
-    copy:
-      src: "{{ LOCAL_PATH.PACKAGES }}/rke2-airgap/"
-      dest: /root/rke2-artifacts
-      remote_src: yes
-    tags:
-      - worker-connect
-      - resource-copy    
-  
-  - name: 3-1-5. Extract k9s
-    unarchive:
-      src: "{{ LOCAL_PATH.PACKAGES }}/{{ item.DIR }}/{{ item.FILE_NAME }}"
-      dest: "{{ LOCAL_PATH.PACKAGES }}/{{ item.DIR }}"
-      remote_src: yes
-    with_items:
-      - { DIR: 'k9s', FILE_NAME: 'k9s_Linux_amd64.tar.gz' }
-    tags:
-      - worker-connect
-      - resource-copy    
-  
-  ## 03_install_required_packages
-  - name: 3-2-1. Find RKE2 required RPM files
-    find:
-      paths: "{{ LOCAL_PATH.PACKAGES }}/rke2-required"
-      patterns: "*.rpm"
-    register: rpm_files
-    tags:
-      - worker-connect
-      - resource-install
-  
-  - name: 3-2-2. Install the packages
-    dnf:
-      name: "{{ item }}"
-      state: present
-      disable_gpg_check: yes
-    with_items:
-      - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/libnetfilter_conntrack-1.0.6-5.el8.x86_64.rpm"
-      - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/iptables-1.8.4-24.el8.x86_64.rpm"
-      - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/policycoreutils-python-utils-2.9-24.el8.noarch.rpm"
-      - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/libnftnl-1.1.5-5.el8.x86_64.rpm"
-      - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/container-selinux-2.205.0-2.module-el8.8.0-1265-fa25dd7a.noarch.rpm"
-      - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/rke2-selinux-0.15-1.el8.noarch.rpm, {{ LOCAL_PATH.PACKAGES }}/rke2-required/rke2-common-1.18.20~rke2r1-0.el8.x86_64.rpm"
-    tags:
-      - worker-connect
-      - resource-install
-  
-  ## 04_configure_system
-  - name: 3-2-3. swap off
-    shell: swapoff -a
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-4. swap off of fstab file
-    shell: sed -i '/swap/s/^/#/' /etc/fstab
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-5. Check swap memory size
-    shell: free | awk 'NR == 3 { print $2 }'
-    register: check_swap_mem
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-6. Check swapoff
-    debug:
-      msg: "Complete swapoff!"
-    when: check_swap_mem.stdout == '0'
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-7. flush iptables
-    iptables:
-      flush: yes
-    tags:
-      - worker-connect
-      - network-config
-  
-  ## 05_configure_selinux
-  - name: 3-2-8. Disable SELinux
-    ansible.posix.selinux:
-      policy: targeted
-      state: disabled
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-9. Update SELinux configuration file
-    lineinfile:
-      path: /etc/selinux/config
-      regexp: '^SELINUX='
-      line: SELINUX=disabled
-      backup: yes # 내용이 다르면 백업(파일이름.날짜 형식) / 같으면 백업 X
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-10. SELinux state
-    shell: getenforce
-    register: "check_selinux"
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-11. Print SELinux status
-    debug:
-      msg: "{{ check_selinux.stdout }}"
-    tags:
-      - worker-connect
-      - network-config
-  
-  ## 06_configure_network_for_rke2_airgap
-  - name: 3-2-12. Check NetworkManager directory exists
-    file:
-      path: "{{ NET_CONF_DIR }}"
-      state: directory
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-13. Add the content to the file
-    copy:
-      dest: "{{ NET_CONF_FILE }}"
-      content: |
-        ##
-        [keyfile]
-        unmanaged-devices=interface-name:cali*;interface-name:flannel*
-        ##
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-14. Reload NetworkManager
-    systemd_service:
-      name: NetworkManager
-      state: restarted
-      enabled: true
-    register: "check_networkmanager_status"
-    tags:
-      - worker-connect
-      - network-config
-  
-  - name: 3-2-15. Print NetworkManager service status
-    debug:
-      msg: "{{ check_networkmanager_status }}"
-    tags:
-      - worker-connect
-      - network-config
-  
-  ## 07_install_configure_rke2
-  - name: 3-3-1. Uninstall RKE2
-    shell: rke2-uninstall.sh
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  - name: 3-3-2. Install and set RKE2
-    shell: INSTALL_RKE2_TYPE=agent INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts INSTALL_RKE2_SYSTEM_DEFAULT_REGISTRY="{{ REGISTRY_URL }}{{ ':' }}5000" sh /root/rke2-artifacts/install.sh
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  ## 08_configure_registry
-  - name: 3-3-3. Create directories(Docker, RKE2, containerd)
-    file:
-      path: "{{ item.DIR }}"
-      state: directory
-    with_items: "{{ REGISTRY_CONFIG }}"
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  - name: 3-3-4. Set private repo for (Docker, RKE2, containerd)
-    copy:
-      dest: "{{ item.DIR }}/{{ item.FILE }}"
-      content: "{{ item.CONTENT }}"
-    with_items: "{{ REGISTRY_CONFIG }}"
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  ## 09_configure_server
-  - name: 3-3-5. Make necessary directories
-    file:
-      path: /etc/rancher/rke2
-      state: directory
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  - name: 3-3-6. copy token
-    copy:
-      src: "{{ LOCAL_PATH.BASE }}/node-token/token"
-      dest: /root/node-token
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  - name: 3-3-7. Display the cluster token from the file and emphasize it
-    shell: cat /root/node-token
-    register: node_token
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  ##토큰값 받아와서 주입
-  - name: 3-3-8. Add the content to the file
-    copy:
-      dest: /etc/rancher/rke2/config.yaml
-      content: |
-        server: https://{{ CONTROL_NODE_IP }}:9345
-        token: {{ node_token.stdout }} #TODO: 클러스터 토큰값 고정
-        node-name: {{ inventory_hostname }}
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  - name: 3-3-9. Enable and start the rke2-agent service
-    systemd_service:
-      name: rke2-agent
-      state: started
-      enabled: true
-    register: "check_rke2angent_state"
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  - name: 3-3-10. Print rke2-agent service status
-    debug:
-      msg: "{{ check_rke2angent_state }}"
-    tags:
-      - worker-connect
-      - rke2-init
-  
-  ## 10_configure_kube_tools
-  - name: 3-4-1. Make log directories
-    file:
-      path: "{{ item }}"
-      state: directory
-    with_items:
-      - /var/log/vas
-      - /root/.kube
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  - name: 3-4-2. Set Up Kubeconfig
-    copy:
-      src: /var/lib/rancher/rke2/agent/kubelet.kubeconfig
-      dest: /root/.kube/config
-      mode: 0600
-      remote_src: yes
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  ## 11_install_configure tools
-  - name: 3-4-3. Copy configuration tool files
-    copy:
-      src: "{{ item.SRC }}"
-      dest: "/usr/local/bin/{{ item.DEST }}"
-      mode: +x
-      remote_src: yes
-    with_items: "{{ CONFIG_TOOL_FILES_W }}"
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  - name: 3-4-4. Install longhorn deps
-    dnf:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - "{{ LOCAL_PATH.PACKAGES }}/longhorn/isns-utils-libs-0.99-1.el8.x86_64.rpm"
-      - "{{ LOCAL_PATH.PACKAGES }}/longhorn/iscsi-initiator-utils-6.2.1.4-8.git095f59c.el8_8.x86_64.rpm, {{ LOCAL_PATH.PACKAGES }}/longhorn/iscsi-initiator-utils-iscsiuio-6.2.1.4-8.git095f59c.el8_8.x86_64.rpm"
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  - name: 3-4-5. Enable iscsid
-    systemd_service:
-      name: iscsid
-      state: started
-      enabled: true
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  - name: 3-4-6. configuration environment
-    lineinfile:
-      path: /root/.bashrc
-      line: "{{ item }}"
-    with_items:
-      - "export PATH=$PATH:/var/lib/rancher/rke2/bin:/usr/local/bin"
-      - "export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml"
-      - "alias k=kubectl"
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  - name: 3-4-7. Source bashrc
-    shell: source /root/.bashrc
-    tags:
-      - worker-connect
-      - config-kubeconfig
-  
-  ## 12 label node
-  - name: 3-4-8. set hostname
-    hostname: 
-      name: "{{ inventory_hostname }}"
-    tags:
-      - worker-connect
-      - config-kubeconfig
+- name: 3-0-1. Copy Kernel Params
+  file:
+    src: sysctl.conf
+    dest: /etc/sysctl.conf
+  tags:
+    - worker-connect
+    - system-params
+
+- name: 3-0-2. apply Kernel Params
+  shell: |
+    sysctl -p /etc/sysctl.conf
+  tags:
+    - worker-connect
+    - system-params
+
+## 02_download_resources
+- name: 3-1-1. Make necessary directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /var/log/vas
+    - /root/rke2-artifacts
+    - "{{ LOCAL_PATH.PACKAGES }}"
+    - /root/ansible
+  tags:
+    - worker-connect
+    - resource-copy    
+
+- name: 3-1-2. Copy Hostfile
+  copy:
+    src: /etc/hosts
+    dest: /etc/hosts
+  tags:
+    - worker-connect
+    - resource-copy    
+
+- name: 3-1-3. Copy resources
+  copy:
+    src: "{{ LOCAL_PATH.PACKAGES }}/{{ item }}"
+    dest: "{{ LOCAL_PATH.PACKAGES }}"
+  with_items:
+    - "rke2-required" 
+    - "rke2-airgap"
+    - "k9s"
+    - "rancher"
+    - "default"
+    - "longhorn"
+  tags:
+    - worker-connect
+    - resource-copy    
+
+- name: 3-1-4. Move RKE2 artifacts
+  copy:
+    src: "{{ LOCAL_PATH.PACKAGES }}/rke2-airgap/"
+    dest: /root/rke2-artifacts
+    remote_src: yes
+  tags:
+    - worker-connect
+    - resource-copy    
+
+- name: 3-1-5. Extract k9s
+  unarchive:
+    src: "{{ LOCAL_PATH.PACKAGES }}/{{ item.DIR }}/{{ item.FILE_NAME }}"
+    dest: "{{ LOCAL_PATH.PACKAGES }}/{{ item.DIR }}"
+    remote_src: yes
+  with_items:
+    - { DIR: 'k9s', FILE_NAME: 'k9s_Linux_amd64.tar.gz' }
+  tags:
+    - worker-connect
+    - resource-copy    
+
+## 03_install_required_packages
+- name: 3-2-1. Find RKE2 required RPM files
+  find:
+    paths: "{{ LOCAL_PATH.PACKAGES }}/rke2-required"
+    patterns: "*.rpm"
+  register: rpm_files
+  tags:
+    - worker-connect
+    - resource-install
+
+- name: 3-2-2. Install the packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+    disable_gpg_check: yes
+  with_items:
+    - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/libnetfilter_conntrack-1.0.6-5.el8.x86_64.rpm"
+    - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/iptables-1.8.4-24.el8.x86_64.rpm"
+    - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/policycoreutils-python-utils-2.9-24.el8.noarch.rpm"
+    - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/libnftnl-1.1.5-5.el8.x86_64.rpm"
+    - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/container-selinux-2.205.0-2.module-el8.8.0-1265-fa25dd7a.noarch.rpm"
+    - "{{ LOCAL_PATH.PACKAGES }}/rke2-required/rke2-selinux-0.15-1.el8.noarch.rpm, {{ LOCAL_PATH.PACKAGES }}/rke2-required/rke2-common-1.18.20~rke2r1-0.el8.x86_64.rpm"
+  tags:
+    - worker-connect
+    - resource-install
+
+## 04_configure_system
+- name: 3-2-3. swap off
+  shell: swapoff -a
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-4. swap off of fstab file
+  shell: sed -i '/swap/s/^/#/' /etc/fstab
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-5. Check swap memory size
+  shell: free | awk 'NR == 3 { print $2 }'
+  register: check_swap_mem
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-6. Check swapoff
+  debug:
+    msg: "Complete swapoff!"
+  when: check_swap_mem.stdout == '0'
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-7. flush iptables
+  iptables:
+    flush: yes
+  tags:
+    - worker-connect
+    - network-config
+
+## 05_configure_selinux
+- name: 3-2-8. Disable SELinux
+  ansible.posix.selinux:
+    policy: targeted
+    state: disabled
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-9. Update SELinux configuration file
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: SELINUX=disabled
+    backup: yes # 내용이 다르면 백업(파일이름.날짜 형식) / 같으면 백업 X
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-10. SELinux state
+  shell: getenforce
+  register: "check_selinux"
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-11. Print SELinux status
+  debug:
+    msg: "{{ check_selinux.stdout }}"
+  tags:
+    - worker-connect
+    - network-config
+
+## 06_configure_network_for_rke2_airgap
+- name: 3-2-12. Check NetworkManager directory exists
+  file:
+    path: "{{ NET_CONF_DIR }}"
+    state: directory
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-13. Add the content to the file
+  copy:
+    dest: "{{ NET_CONF_FILE }}"
+    content: |
+      ##
+      [keyfile]
+      unmanaged-devices=interface-name:cali*;interface-name:flannel*
+      ##
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-14. Reload NetworkManager
+  systemd_service:
+    name: NetworkManager
+    state: restarted
+    enabled: true
+  register: "check_networkmanager_status"
+  tags:
+    - worker-connect
+    - network-config
+
+- name: 3-2-15. Print NetworkManager service status
+  debug:
+    msg: "{{ check_networkmanager_status }}"
+  tags:
+    - worker-connect
+    - network-config
+
+## 07_install_configure_rke2
+- name: 3-3-1. Uninstall RKE2
+  shell: rke2-uninstall.sh
+  tags:
+    - worker-connect
+    - rke2-init
+
+- name: 3-3-2. Install and set RKE2
+  shell: INSTALL_RKE2_TYPE=agent INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts INSTALL_RKE2_SYSTEM_DEFAULT_REGISTRY="{{ REGISTRY_URL }}{{ ':' }}5000" sh /root/rke2-artifacts/install.sh
+  tags:
+    - worker-connect
+    - rke2-init
+
+## 08_configure_registry
+- name: 3-3-3. Create directories(Docker, RKE2, containerd)
+  file:
+    path: "{{ item.DIR }}"
+    state: directory
+  with_items: "{{ REGISTRY_CONFIG }}"
+  tags:
+    - worker-connect
+    - rke2-init
+
+- name: 3-3-4. Set private repo for (Docker, RKE2, containerd)
+  copy:
+    dest: "{{ item.DIR }}/{{ item.FILE }}"
+    content: "{{ item.CONTENT }}"
+  with_items: "{{ REGISTRY_CONFIG }}"
+  tags:
+    - worker-connect
+    - rke2-init
+
+## 09_configure_server
+- name: 3-3-5. Make necessary directories
+  file:
+    path: /etc/rancher/rke2
+    state: directory
+  tags:
+    - worker-connect
+    - rke2-init
+
+- name: 3-3-6. copy token
+  copy:
+    src: "{{ LOCAL_PATH.BASE }}/node-token/token"
+    dest: /root/node-token
+  tags:
+    - worker-connect
+    - rke2-init
+
+- name: 3-3-7. Display the cluster token from the file and emphasize it
+  shell: cat /root/node-token
+  register: node_token
+  tags:
+    - worker-connect
+    - rke2-init
+
+##토큰값 받아와서 주입
+- name: 3-3-8. Add the content to the file
+  copy:
+    dest: /etc/rancher/rke2/config.yaml
+    content: |
+      server: https://{{ CONTROL_NODE_IP }}:9345
+      token: {{ node_token.stdout }} #TODO: 클러스터 토큰값 고정
+      node-name: {{ inventory_hostname }}
+  tags:
+    - worker-connect
+    - rke2-init
+
+- name: 3-3-9. Enable and start the rke2-agent service
+  systemd_service:
+    name: rke2-agent
+    state: started
+    enabled: true
+  register: "check_rke2angent_state"
+  tags:
+    - worker-connect
+    - rke2-init
+
+- name: 3-3-10. Print rke2-agent service status
+  debug:
+    msg: "{{ check_rke2angent_state }}"
+  tags:
+    - worker-connect
+    - rke2-init
+
+## 10_configure_kube_tools
+- name: 3-4-1. Make log directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /var/log/vas
+    - /root/.kube
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+- name: 3-4-2. Set Up Kubeconfig
+  copy:
+    src: /var/lib/rancher/rke2/agent/kubelet.kubeconfig
+    dest: /root/.kube/config
+    mode: 0600
+    remote_src: yes
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+## 11_install_configure tools
+- name: 3-4-3. Copy configuration tool files
+  copy:
+    src: "{{ item.SRC }}"
+    dest: "/usr/local/bin/{{ item.DEST }}"
+    mode: +x
+    remote_src: yes
+  with_items: "{{ CONFIG_TOOL_FILES_W }}"
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+- name: 3-4-4. Install longhorn deps
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ LOCAL_PATH.PACKAGES }}/longhorn/isns-utils-libs-0.99-1.el8.x86_64.rpm"
+    - "{{ LOCAL_PATH.PACKAGES }}/longhorn/iscsi-initiator-utils-6.2.1.4-8.git095f59c.el8_8.x86_64.rpm, {{ LOCAL_PATH.PACKAGES }}/longhorn/iscsi-initiator-utils-iscsiuio-6.2.1.4-8.git095f59c.el8_8.x86_64.rpm"
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+- name: 3-4-5. Enable iscsid
+  systemd_service:
+    name: iscsid
+    state: started
+    enabled: true
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+- name: 3-4-6. configuration environment
+  lineinfile:
+    path: /root/.bashrc
+    line: "{{ item }}"
+  with_items:
+    - "export PATH=$PATH:/var/lib/rancher/rke2/bin:/usr/local/bin"
+    - "export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml"
+    - "alias k=kubectl"
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+- name: 3-4-7. Source bashrc
+  shell: source /root/.bashrc
+  tags:
+    - worker-connect
+    - config-kubeconfig
+
+## 12 label node
+- name: 3-4-8. set hostname
+  hostname: 
+    name: "{{ inventory_hostname }}"
+  tags:
+    - worker-connect
+    - config-kubeconfig
