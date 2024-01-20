@@ -52,7 +52,7 @@
 
 # 외부 서비스에 대한 모니터링을 돕는 하는 BlackBox exporter를 배포합니다.
 - name: 4-2-8. blackbox exporter
-  shell: helm install blackbox-exporter aicc/prometheus-blackbox-exporter -n cattle-monitoring-system --create-namespace --set image.registry="{{ REGISTRY_URL }}:5000" --set image.repository="third-party/prom/blackbox-exporter" --set image.tags="{{ BLACKBOX_EXPORTER_VERS }}"
+  shell: helm install blackbox-exporter aicc/prometheus-blackbox-exporter -n cattle-monitoring-system --create-namespace --set image.registry="{{ REGISTRY_URL }}:5000" --set image.repository="third-party/prom/blackbox-exporter" --set image.tags="v0.24.0"
   tags:
     - oss_setup
     - monitoring

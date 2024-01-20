@@ -1,11 +1,9 @@
 # Aibot 이미지 버전
 AIBOT_VER: "0.1.19"
-# OSS HELM 연동 정보
-BLACKBOX_EXPORTER_VERS: "v0.24.0"
 # INSTALL RESOURCE 위치
 LOCAL_PATH:
-  BASE: /tmp
-  PACKAGES: /tmp/packages
+  BASE: 
+  PACKAGES: 
 # MARIA_SHELL
 TIMEOUT: 360 
 INTERVAL: 10
@@ -15,40 +13,34 @@ DELAY: 0.1
 CLUSTER_IP: "https://kubernetes.default.svc" #추후 수정 예정
 ARGO_USER: "admin"
 ARGO_PASSWORD: "admin12341234"
-ARGO_CONNECTED_SCM: "{{ GITEA_URL }}/gitea/manifest.git"
+ARGO_CONNECTED_SCM: "{{ GITEA_URL }}:{{ GITEA_PORT}}/gitea/manifest.git"
 # PSQL PASSWD
 PGPASSWD: "postgres12341234"
 # 내부 GITEA 연동
 GITEA_USER: "gitea"
 GITEA_PASSWD: "admin12341234"
-GITEA_URL: "http://10.71.164.149:3000"
+GITEA_URL: 
+GITEA_PORT: "3000"
 # 다중 컨트롤 노드 시, 연결 부
-CONTROL_NODE_IP: "10.71.162.158"
+CONTROL_NODE_IP: 
 # 내부 Nexus Repo
 HELM_PORT: "8081"
-REGISTRY_PORT: "{{ REGISTRY_PORT }}"
-REGISTRY_URL: "10.71.164.149"
+REGISTRY_PORT: "5000"
+REGISTRY_URL: 
 REGISTRY_ID: "admin"
 REGISTRY_PASSWD: "admin12341234"
-ADMIN_PASSWD_LOCATION: "{{ NEXUS_DIR }}/data/admin.password"
-NEXUS_DIR: /opt/nexus
+NEXUS_DIR: 
 NEXUS_CERT_FILE: "{{ NEXUS_DIR }}/cert.pem"
 NEXUS_KEY_FILE: "{{ NEXUS_DIR )}}/key.pem"
 DOCKER_CONFIG: /etc/docker/daemon.json
 # 단일 컨트롤 노드 시, MASTER
-MASTER_NODE_IP: "10.71.162.155"
+MASTER_NODE_IP: 
 #S3_PATH_BASE: "s3{{ ':' }}//s3-onebox-test-01-repository-01"
 NET_CONF_DIR: /etc/NetworkManager/conf.d
 NET_CONF_FILE: "{{ NET_CONF_DIR }}/rke2-canal.conf"
 RANCHER_ADMIN_PASSWORD: "admin12341234"
 MARIADB_ROOT_PASSWORD: "admin12341234"
 MYSQL_PASSWORD: "admin12341234"
-# GITTEA INIT
-RESPONSE: (curl -s -o /dev/null -w "%{http_code}" -X 'GET' "http://{{ CONTROL_NODE_IP }}:3000" \
-  -H 'accept{{':'}} application/json' \
-  -H 'Content-Type{{':'}} application/json')
-COOKIES: $(curl -s -I "$GITEA_URL" | grep -i "Set-Cookie")
-ILIKEGITEA_COOKIE: $(echo "$COOKIES" | grep "i_like_gitea" | awk -F'=' '{print $2}' | awk -F';' '{print $1}')
 ## variables for 08_configure_registry
 REGISTRY_CONFIG:
   # Docker
