@@ -6,7 +6,8 @@
     dest: "{{ install_dir }}/"
     mode: 0644
   with_items: 
-    - base.tar
+    - 2_update_docker
+    - 3_k8s_tools
     - cni-plugins-linux-amd64-v1.3.0.tgz
     - crictl-v1.27.0-linux-amd64.tar.gz
   tags:
@@ -25,7 +26,6 @@
     dest: "{{ item.dest }}"
     remote_src: yes
   with_items: 
-    - { src: "base.tar", dest: "{{ install_dir }}/"}
     - { src: "cni-plugins-linux-amd64-v1.3.0.tgz", dest: "/opt/cni/bin"}
     - { src: "crictl-v1.27.0-linux-amd64.tar.gz", dest: "/usr/local/bin"}
   tags:
@@ -37,16 +37,25 @@
     file_type: file
     patterns: "*.deb"
   register: deb_array_2
+  when: "{{ dist_type }} == 'ubuntu'"
   tags:
     - docker
 
 - name: dpkg configure
   shell: "dpkg --configure -a"
+  when: "{{ dist_type }} == 'ubuntu'"
   tags:
     - docker
 
 - name: install Deb files
   shell: "dpkg -i {{ install_dir }}/2_update_docker/*.deb" 
+  when: "{{ dist_type }} == 'ubuntu'"
+  tags:
+    - docker
+
+- name: install Rpm files
+  shell: "yum install -y {{ install_dir }}/2_update_docker/*.rpm" 
+  when: "{{ dist_type }} == 'rpm_files'"
   tags:
     - docker
 

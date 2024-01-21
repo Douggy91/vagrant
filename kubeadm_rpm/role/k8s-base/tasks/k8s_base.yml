@@ -58,8 +58,15 @@
 
 - name: disble Firewalld
   shell: ufw disable
+  when: "{{ dist_type }} == 'ubuntu'"
   tags:
     - k8s_base
+
+- name: disble Firewalld
+  shell: ufw disable
+  when: "{{ dist_type }} == 'rpm_files'"
+  tags:
+    - k8s_base    
 
 - name: Cofigure DNS default
   shell: sed -i '/\[main\]/a dns=default' /etc/NetworkManager/NetworkManager.conf

@@ -63,7 +63,7 @@
 
 - name: source bashrc
   shell: . /root/.bashrc
-  ignore_errors: yes
+  ignore_errors: True
   tags:
     - k8s_connect
 

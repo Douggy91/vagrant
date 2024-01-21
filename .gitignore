@@ -1,4 +1,5 @@
 3_k8s_tools
+2_update_docker
 *.tar
 *.tar.gz
 *.tgz

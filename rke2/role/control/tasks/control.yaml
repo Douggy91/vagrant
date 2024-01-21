@@ -52,6 +52,8 @@
         server {
           listen 9345;
           proxy_pass stream_rke2_9345;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
         }
         upstream stream_rke2_6443 {
           server rke2-master-node01:6443;
@@ -61,6 +63,8 @@
         server {
           listen 6443;
           proxy_pass stream_rke2_6443;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
         }
         upstream stream_rke2_80 {
           server rke2-master-node01:80;
@@ -70,6 +74,8 @@
         server {
           listen 80;
           proxy_pass stream_rke2_80;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
         }
         upstream stream_rke2_443 {
           server rke2-master-node01:443;
@@ -79,6 +85,8 @@
         server {
           listen 443;
           proxy_pass stream_rke2_443;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
         }
       }
   tags:

@@ -2,11 +2,19 @@
 # tasks file for container-runtimes
 - name: dpkg configure
   shell: "dpkg --configure -a"
+  when: "{{ dist_type }} == 'ubuntu'"
   tags:
     - k8s_tools
 
-- name: Install *.deb files
-  shell: printf "Y\n" | dpkg -i /tmp/3_k8s_tools/*.deb
+- name: Install *.Deb files
+  shell: printf "Y\n" | dpkg -i {{ install_dir }}/3_k8s_tools/*.deb
+  when: "{{ dist_type }} == 'ubuntu'"
+  tags:
+    - k8s_tools
+
+- name: Install *.Rpm files
+  shell: "yum install -y {{ install_dir }}/3_k8s_tools/*.rpm"
+  when: "{{ dist_type }} == 'rpm_files'"
   tags:
     - k8s_tools
 
