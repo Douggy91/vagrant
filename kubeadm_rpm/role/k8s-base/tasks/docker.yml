@@ -55,7 +55,7 @@
 
 - name: install Rpm files
   shell: "yum install -y {{ LOCAL_PATH.BASE }}/2_update_docker/*.rpm" 
-  when: "{{ dist_type }} == 'rpm_files'"
+  when: dist_type == "rpm_files"
   tags:
     - docker
 
