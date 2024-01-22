@@ -57,6 +57,7 @@
 
 - name: run registry
   shell: docker run -d -p 5000:5000 --restart=always --name registry {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/registry:2.8.2
+  ignore_errors: True
   tags:
     - k8s_tools
     - registry
