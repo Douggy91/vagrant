@@ -1,56 +1,15 @@
-version = 2
-
-root = "/var/lib/containerd"
-state = "/run/containerd"
-oom_score = 0
-imports = ["/etc/containerd/runtime_*.toml", "./debug.toml"]
-
-[grpc]
-  address = "/run/containerd/containerd.sock"
-  uid = 0
-  gid = 0
-
-[debug]
-  address = "/run/containerd/debug.sock"
-  uid = 0
-  gid = 0
-  level = "info"
-
-[metrics]
-  address = ""
-  grpc_histogram = false
-
-[cgroup]
-  path = ""
-
-[plugins]
-  [plugins."io.containerd.monitor.v1.cgroups"]
-    no_prometheus = false
-  [plugins."io.containerd.service.v1.diff-service"]
-    default = ["walking"]
-  [plugins."io.containerd.gc.v1.scheduler"]
-    pause_threshold = 0.02
-    deletion_threshold = 0
-    mutation_threshold = 100
-    schedule_delay = 0
-    startup_delay = "100ms"
-  [plugins."io.containerd.runtime.v2.task"]
-    platforms = ["linux/amd64"]
-    sched_core = false
-  [plugins."io.containerd.service.v1.tasks-service"]
-    blockio_config_file = ""
-    rdt_config_file = ""
-  [plugins."io.containerd.grpc.v1.cri"]
-    sandbox_image = "registry.k8s.io/pause:3.9"
-    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-      runtime_type = "io.containerd.runc.v2"
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-        SystemdCgroup = true
-[plugins."io.containerd.grpc.v1.cri".registry.configs."{{ CONTROL_REGISTRY }}".tls]
-      insecure_skip_verify = true
-    [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ CONTROL_REGISTRY }}".auth]
-      auth = "YWRtaW46YWRtaW4xMjM0"
-  [plugins."io.containerd.grpc.v1.cri".registry.headers]
+disabled_plugins = []
+[plugins."io.containerd.grpc.v1.cri".registry]
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ CONTROL_REGISTRY }}"]
-      endpoint = ["http://{{ CONTROL_REGISTRY }}"]
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+      endpoint = ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
+      endpoint = ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+      endpoint = ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+  [plugins."io.containerd.grpc.v1.cri".registry.configs]
+    [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}".auth]
+      username = "{{ REGISTRY_ID }}"
+      password = "{{ REGISTRY_PASSWD }}"
+    [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}".tls]
+      insecure_skip_verify = true

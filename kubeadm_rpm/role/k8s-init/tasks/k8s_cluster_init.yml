@@ -4,6 +4,7 @@
     --pod-network-cidr=10.244.0.0/16 \
     --upload-certs \
     --kubernetes-version v1.28.2 \
+    --image-repository {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/registry.k8s.io
     --token-ttl 0 | grep -A 2 "kubeadm join" 
   register: INIT_COMMAND
   tags:
