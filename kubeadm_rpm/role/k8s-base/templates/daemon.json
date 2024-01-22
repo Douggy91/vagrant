@@ -1,4 +1,12 @@
 {
+  "exec-opts": ["native.cgroupdriver=systemd"],
   "registry-mirrors": ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"],
-  "insecure-registries": ["{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+  "insecure-registries" : ["localhost:5000", "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"],
+  "allow-nondistributable-artifacts": ["localhost:5000", "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}" ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "group": "rnd",
+  "storage-driver": "overlay2"
 }
