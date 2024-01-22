@@ -1,5 +1,7 @@
 - name: install node resource
   hosts: all
+  remote_user: aicc
+  become: True
   gather_facts: true
   vars_files: vars/main.yml
   roles:
@@ -7,18 +9,24 @@
 ---
 - name: install k8s master init
   hosts: masters-init
+  remote_user: aicc
+  become: True
   vars_files: vars/main.yml
   roles:
     - { role: ./role/k8s-init }
 ---
 - name: install k8s master connect
   hosts: masters-connect
+  remote_user: aicc
+  become: True
   vars_files: vars/main.yml
   roles:
     - { role: ./role/k8s-connect }
 ---
 - name: install k8s worker init
   hosts: workers
+  remote_user: aicc
+  become: True
   vars_files: vars/main.yml
   roles:
     - { role: ./role/k8s-workers }

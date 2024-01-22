@@ -1,9 +1,0 @@
----
-# vars file for container-runtimes
-CONTROL_REGISTRY: "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
-REGISTRY_URL:
-REGISTRY_PORT: 
-#dist_type: "ubuntu"
-dist_type: "{{ 'ubuntu' if ansible_distribution == 'Ubuntu' else 'rpm_files' if ansible_distribution == 'CentOS' }}"
-install_dir: "/tmp" 
-K8S_CNI: "calico"

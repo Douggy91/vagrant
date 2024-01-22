@@ -1,8 +1,6 @@
 #dist_type: "ubuntu"
 dist_type: "{{ 'ubuntu' if ansible_distribution == 'Ubuntu' else 'rpm_files' if ansible_distribution == 'CentOS' }}"
-install_dir: "/tmp" 
 K8S_CNI: "calico"
-BASTION_NODE_IP: "192.168.56.1"
 # IMG_REGISTRY: "localhost:5000"
 # Aibot 이미지 버전
 AIBOT_VER: "0.1.19"

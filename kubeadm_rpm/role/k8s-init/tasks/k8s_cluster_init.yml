@@ -1,6 +1,6 @@
 - name: kubeadm init
   shell: kubeadm init \
-    --control-plane-endpoint={{ BASTION_NODE_IP }}:6443 \
+    --control-plane-endpoint={{ CONTROL_NODE_IP }}:6443 \
     --pod-network-cidr=10.244.0.0/16 \
     --upload-certs \
     --kubernetes-version v1.28.2 \

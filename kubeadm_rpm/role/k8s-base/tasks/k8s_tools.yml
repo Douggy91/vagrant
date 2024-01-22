@@ -7,19 +7,19 @@
     - k8s_tools
 
 - name: Install *.Deb files
-  shell: printf "Y\n" | dpkg -i {{ install_dir }}/3_k8s_tools/*.deb
+  shell: printf "Y\n" | dpkg -i {{ LOCAL_PATH.BASE }}/3_k8s_tools/*.deb
   when: "{{ dist_type }} == 'ubuntu'"
   tags:
     - k8s_tools
 
 - name: Install *.Rpm files
-  shell: "yum install -y {{ install_dir }}/3_k8s_tools/*.rpm"
+  shell: "yum install -y {{ LOCAL_PATH.BASE }}/3_k8s_tools/*.rpm"
   when: "{{ dist_type }} == 'rpm_files'"
   tags:
     - k8s_tools
 
 - name: docker login
-  shell: docker login {{ CONTROL_REGISTRY }} --username admin --password admin1234
+  shell: docker login {{ REGISTRY_URL }}:{{ REGISTRY_PORT }} --username admin --password admin1234
   tags:
     - k8s_tools 
 
@@ -56,7 +56,7 @@
     - k8s_tools
 
 # - name: run registry
-#   shell: docker run -d -p 5000:5000 --restart=always --name registry {{ CONTROL_REGISTRY }}/registry:2.8.2
+#   shell: docker run -d -p 5000:5000 --restart=always --name registry {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/registry:2.8.2
 #   tags:
 #     - k8s_tools
 #     - registry
@@ -78,7 +78,7 @@
 
 
 # - name: pull calico
-#   shell: "docker pull {{ CONTROL_REGISTRY }}/{{ item }}"
+#   shell: "docker pull {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/{{ item }}"
 #   with_items: 
 #     - calico/cni:v3.26.1
 #     - calico/node:v3.26.1
@@ -89,7 +89,7 @@
 #     - registry
 
 # - name: tagging config
-#   shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
+#   shell: "docker tag {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/{{ item }} localhost:5000/{{ item }}"
 #   with_items: 
 #     - calico/cni:v3.26.1
 #     - calico/node:v3.26.1
@@ -111,7 +111,7 @@
 #     - registry
 
 # - name: pull flannel
-#   shell: "docker pull {{ CONTROL_REGISTRY }}/flannel/{{ item }}"
+#   shell: "docker pull {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/flannel/{{ item }}"
 #   with_items: 
 #     - flannel:v0.22.0
 #     - flannel-cni-plugin:v1.1.2
@@ -121,7 +121,7 @@
 #     - registry
 
 # - name: tagging config
-#   shell: "docker tag {{ CONTROL_REGISTRY }}/{{ item }} localhost:5000/{{ item }}"
+#   shell: "docker tag {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/{{ item }} localhost:5000/{{ item }}"
 #   with_items: 
 #     - flannel/flannel:v0.22.0
 #     - flannel/flannel-cni-plugin:v1.1.2
