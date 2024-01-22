@@ -2,12 +2,12 @@
 # tasks file for container-runtimes
 - name: copy resource
   copy:
-    src: "{{ dist_type }}/{{ item }}"
+    src: "{{ item }}"
     dest: "{{ LOCAL_PATH.BASE }}/"
     mode: 0644
   with_items: 
-    - 2_update_docker
-    - 3_k8s_tools
+    - "{{ dist_type }}/2_update_docker"
+    - "{{ dist_type }}/3_k8s_tools"
     - cni-plugins-linux-amd64-v1.3.0.tgz
     - crictl-v1.27.0-linux-amd64.tar.gz
   tags:
