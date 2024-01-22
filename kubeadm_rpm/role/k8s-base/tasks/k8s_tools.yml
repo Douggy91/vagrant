@@ -77,6 +77,11 @@
     - k8s_tools
     - registry
 
+- name: helm mod
+  shell: chmod +x /usr/local/bin/helm
+  tags:
+    - k8s_tools
+
 
 # - name: pull calico
 #   shell: "docker pull {{ REGISTRY_URL }}:{{ REGISTRY_PORT }}/{{ item }}"
