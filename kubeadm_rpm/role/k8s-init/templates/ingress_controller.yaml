@@ -411,6 +411,7 @@ spec:
       maxUnavailable: 1
     type: RollingUpdate
   template:
+    hostNetwork: True
     metadata:
       labels:
         app.kubernetes.io/component: controller
