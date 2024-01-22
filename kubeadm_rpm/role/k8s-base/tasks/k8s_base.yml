@@ -58,13 +58,13 @@
 
 - name: disble Firewalld
   shell: ufw disable
-  when: "{{ dist_type }} == 'ubuntu'"
+  when: dist_type == "ubuntu"
   tags:
     - k8s_base
 
 - name: disble Firewalld
   shell: ufw disable
-  when: "{{ dist_type }} == 'rpm_files'"
+  when: dist_type == "rpm_files"
   tags:
     - k8s_base    
 
