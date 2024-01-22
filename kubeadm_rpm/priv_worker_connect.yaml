@@ -1,4 +1,0 @@
-- name: install k8s master init
-  hosts: workers
-  roles:
-    - { role: ./role/k8s-workers }

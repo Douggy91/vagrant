@@ -1,4 +1,0 @@
-- name: install k8s master init
-  hosts: master-connect
-  roles:
-    - { role: ./role/k8s-connect }

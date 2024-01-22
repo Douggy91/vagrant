@@ -1,5 +1,25 @@
 - name: install node resource
   hosts: all
   gather_facts: true
+  vars_files: vars/main.yml
   roles:
     - { role: ./role/k8s-base }
+---
+- name: install k8s master init
+  hosts: masters-init
+  vars_files: vars/main.yml
+  roles:
+    - { role: ./role/k8s-init }
+---
+- name: install k8s master connect
+  hosts: masters-connect
+  vars_files: vars/main.yml
+  roles:
+    - { role: ./role/k8s-connect }
+---
+- name: install k8s worker init
+  hosts: workers
+  vars_files: vars/main.yml
+  roles:
+    - { role: ./role/k8s-workers }
+
