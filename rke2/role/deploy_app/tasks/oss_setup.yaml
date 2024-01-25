@@ -21,7 +21,9 @@
     - { yaml: mariadb-values.yaml, dest: /root/manifest/oss/mariadb/mariadb-values.yaml }
     - { yaml: opensearch-values.yaml, dest: /root/manifest/oss/opensearch/opensearch-values.yaml }
     - { yaml: redis-values.yaml, dest: /root/manifest/oss/redis/redis-values.yaml }
-    - { yaml: solr-values.yaml, dest: /root/manifest/oss/solr/solr-values.yaml }
+    - { yaml: zk-statefulset.yaml, dest: /root/manifest/oss/solr/zk-statefulset.yaml }
+    - { yaml: solr-statefulset, dest: /root/manifest/oss/solr/solr-statefulset }
+    - { yaml: solr-ingress.yaml, dest: /root/manifest/oss/solr/solr-ingress.yaml }
     - { yaml: dashboard-ingress.yaml, dest: /root/manifest/oss/opensearch/dashboard-ingress.yaml }
     - { yaml: grafana-ingress.yaml, dest: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml }
     - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
@@ -38,7 +40,9 @@
     - { yaml: mariadb-values.yaml, dest: /root/manifest/oss/mariadb/mariadb-values.yaml }
     - { yaml: opensearch-values.yaml, dest: /root/manifest/oss/opensearch/opensearch-values.yaml }
     - { yaml: redis-values.yaml, dest: /root/manifest/oss/redis/redis-values.yaml }
-    - { yaml: solr-values.yaml, dest: /root/manifest/oss/solr/solr-values.yaml }
+    - { yaml: zk-statefulset.yaml, dest: /root/manifest/oss/solr/zk-statefulset.yaml }
+    - { yaml: solr-statefulset, dest: /root/manifest/oss/solr/solr-statefulset }
+    - { yaml: solr-ingress.yaml, dest: /root/manifest/oss/solr/solr-ingress.yaml }
     - { yaml: dashboard-ingress.yaml, dest: /root/manifest/oss/opensearch/dashboard-ingress.yaml }
     - { yaml: grafana-ingress.yaml, dest: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml }
     - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
@@ -63,7 +67,6 @@
     - { ns: db, name: mariadb, repo_name: mariadb, values_file: /root/manifest/oss/mariadb/mariadb-values.yaml }
     - { ns: opensearch, name: opensearch, repo_name: opensearch, values_file: /root/manifest/oss/opensearch/opensearch-values.yaml }
     - { ns: redis, name: redis, repo_name: redis-cluster, values_file: /root/manifest/oss/redis/redis-values.yaml }
-    - { ns: solr, name: solr, repo_name: solr, values_file: /root/manifest/oss/solr/solr-values.yaml }
   tags:
     - oss_setup
     - deploy_db
