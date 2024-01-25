@@ -16,7 +16,7 @@
 - name: 4-5-4. deploy monitoring vas-chub
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \
@@ -36,7 +36,7 @@
 - name: 4-5-5. deploy monitoring k8s
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \

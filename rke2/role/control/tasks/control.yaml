@@ -1,36 +1,3 @@
-# - name: 0-1-1. Copy Packages
-#   copy:
-#     src: "{{ LOCAL_PATH.PACKAGES }}/nginx"
-#     dest: "{{ LOCAL_PATH.PACKAGES }}"
-#   tags:
-#     - control
-#     - resource-copy
-
-# - name: 0-1-2. Copy hostfile
-#   copy:
-#     src: /etc/hosts
-#     dest: /etc/hosts
-#   tags:
-#     - control
-#     - resource-copy
-
-# - name: 0-1-3. rpm Install nginx
-#   shell: "rpm -Uvh {{ item }}"
-#   with_items:
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/libXpm-3.5.12-11.el8.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/libwebp-1.0.0-9.el8.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/gd-2.2.5-6.el8.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/libxslt-1.1.32-6.el8.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/openssl3-libs-3.0.7-5.el8.1.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/centos-logos-httpd-85.8-2.el8.noarch.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/nginx-filesystem-1.23.1-2.module_el8+15017+873f21d4.noarch.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/nginx-core-1.23.1-2.module_el8+15017+873f21d4.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/nginx-1.23.1-2.module_el8+15017+873f21d4.x86_64.rpm"
-#     - "{{ LOCAL_PATH.PACKAGES }}/nginx/nginx-mod-stream-1.23.1-2.module_el8+15017+873f21d4.x86_64.rpm"
-#   tags:
-#     - control
-#     - nginx-install
-
 - name: 0-2-1. create install nginx config
   shell: "touch {{ LOCAL_PATH.BASE }}/nginx.conf"
   tags:
@@ -108,48 +75,6 @@
     - control
     - nginx-setting
 
-# - name: 0-3-5. copy resource 
-#   copy:
-#     src: "{{ LOCAL_PATH.PACKAGES}}/docker/"
-#     dest: "{{ LOCAL_PATH.PACKAGES}}/docker/"
-    
-# - name: 0-3-1. Install rpm to Docker
-#   shell: "rpm -Uvh {{ LOCAL_PATH.PACKAGES }}/docker/repotrack/{{ item }}"
-#   with_items:
-#     - grub2-common-2.02-148.el8_8.1.rocky.0.3.noarch.rpm --nodeps
-#     - grub2-tools-2.02-148.el8_8.1.rocky.0.3.x86_64.rpm --nodeps
-#     - grub2-tools-minimal-2.02-148.el8_8.1.rocky.0.3.x86_64.rpm --nodeps
-#     - ncurses-6.1-9.20180224.el8_8.1.x86_64.rpm --nodeps
-#     - ncurses-base-6.1-9.20180224.el8_8.1.noarch.rpm --nodeps
-#     - ncurses-libs-6.1-9.20180224.el8_8.1.x86_64.rpm --nodeps
-#     - glib2-2.56.4-161.el8.x86_64.rpm --nodeps
-#     - glibc-2.28-225.el8_8.6.x86_64.rpm --nodeps
-#     - glibc-all-langpacks-2.28-225.el8_8.6.x86_64.rpm --nodeps
-#     - glibc-common-2.28-225.el8_8.6.x86_64.rpm --nodeps
-#     - glibc-gconv-extra-2.28-225.el8_8.6.x86_64.rpm --nodeps
-#     - iptables-1.8.4-24.el8_8.2.x86_64.rpm --nodeps
-#     - iptables-libs-1.8.4-24.el8_8.2.x86_64.rpm --nodeps
-#     - policycoreutils-2.9-24.el8.x86_64.rpm
-#     - policycoreutils-python-utils-2.9-24.el8.noarch.rpm
-#     - container-selinux-2.205.0-2.module+el8.8.0+1265+fa25dd7a.noarch.rpm
-#     - containerd.io-1.6.24-3.1.el8.x86_64.rpm
-#     - fuse3-libs-3.3.0-16.el8.x86_64.rpm
-#     - fuse-common-3.3.0-16.el8.x86_64.rpm
-#     - fuse3-3.3.0-16.el8.x86_64.rpm
-#     - fuse-overlayfs-1.11-1.module+el8.8.0+1265+fa25dd7a.x86_64.rpm
-#     - libslirp-4.4.0-1.module+el8.8.0+1265+fa25dd7a.x86_64.rpm
-#     - slirp4netns-1.2.0-2.module+el8.8.0+1265+fa25dd7a.x86_64.rpm
-#     - libcgroup-0.41-19.el8.x86_64.rpm
-#     - docker-buildx-plugin-0.11.2-1.el8.x86_64.rpm
-#     - docker-ce-rootless-extras-24.0.6-1.el8.x86_64.rpm --nodeps
-#     - docker-ce-24.0.6-1.el8.x86_64.rpm
-#     - docker-ce-cli-24.0.6-1.el8.x86_64.rpm
-#     - docker-compose-plugin-2.21.0-1.el8.x86_64.rpm
-#   ignore_errors: yes
-#   tags:
-#     - control
-#     - docker
-
 # Install Docker Compose
 - name: 0-3-2. Create a symbolic link for the existing Docker CLI
   shell: mkdir -p ~/.docker/cli-plugins
@@ -213,6 +138,13 @@
   tags:
     - control
     - docker    
+
+- name: 0-3-9. delay time
+  shell: |
+    sleep 120s
+  tags:
+    - control
+    - docker
 
 - name: 0-3-9. docker login 
   shell: |

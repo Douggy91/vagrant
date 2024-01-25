@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-agent-configmap
+  namespace: monitoring
+data:
+  prom.url: "http://prometheus.HOSTIP.nip.io"

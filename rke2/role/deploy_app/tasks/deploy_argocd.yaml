@@ -6,10 +6,53 @@
     - deploy_argocd
     - get_resource
 
-- name: 4-4-1-1. copy yaml
+- name: 4-4-1-1. Copy yaml
   template:
     src:  "argocd_yaml/{{ item.yaml }}"
     dest: "{{ item.dest }}"
+  with_items:
+    - { yaml: chub/agw/chub-agw-config-deploy.yaml , dest: /root/manifest/chub/agw/chub-agw-config-deploy.yaml }
+    - { yaml: chub/agw/chub-agw-discovery-deploy.yaml , dest: /root/manifest/chub/agw/chub-agw-discovery-deploy.yaml }
+    - { yaml: chub/agw/chub-agw-scg-deploy.yaml , dest: /root/manifest/chub/agw/chub-agw-scg-deploy.yaml }
+    - { yaml: chub/cms/chub-cms-api-deploy.yaml , dest: /root/manifest/chub/cms/chub-cms-api-deploy.yaml }
+    - { yaml: chub/cms/chub-cms-ui-deploy.yaml , dest: /root/manifest/chub/cms/chub-cms-ui-deploy.yaml }
+    - { yaml: chub/cms/chub-cms-ui-ingress.yaml , dest: /root/manifest/chub/cms/chub-cms-ui-ingress.yaml }
+    - { yaml: chub/consumer/chub-consumer-deploy.yaml , dest: /root/manifest/chub/consumer/chub-consumer-deploy.yaml }
+    - { yaml: chub/sgw/chub-sgw-deploy.yaml , dest: /root/manifest/chub/sgw/chub-sgw-deploy.yaml }
+    - { yaml: chub/tsm/chub-tsm-restapi-deploy.yaml , dest: /root/manifest/chub/tsm/chub-tsm-restapi-deploy.yaml }
+    - { yaml: chub/vgw/vgw-deployment.yaml , dest: /root/manifest/chub/vgw/vgw-deployment.yaml }
+    - { yaml: tts/tts-cck-deploy.yaml , dest: /root/manifest/tts/tts-cck-deploy.yaml }
+    - { yaml: stt/cpod/stt-cpod-deploy.yaml , dest: /root/manifest/stt/cpod/stt-cpod-deploy.yaml }
+    - { yaml: stt/epod/stt-epod-deploy.yaml , dest: /root/manifest/stt/epod/stt-epod-deploy.yaml }
+    - { yaml: stt/mpod/stt-mpod-deploy.yaml , dest: /root/manifest/stt/mpod/stt-mpod-deploy.yaml }
+    - { yaml: aibot/scheduler/aibot-scheduler-deploy.yaml , dest: /root/manifest/aibot/scheduler/aibot-scheduler-deploy.yaml }
+    - { yaml: aibot/master/aibot-master-deploy.yaml , dest: /root/manifest/aibot/master/aibot-master-deploy.yaml }
+    - { yaml: aibot/master/aibot-master-configmap.yaml , dest: /root/manifest/aibot/master/aibot-master-configmap.yaml }
+    - { yaml: aibot/gateway/aibot-gateway-deploy.yaml , dest: /root/manifest/aibot/gateway/aibot-gateway-deploy.yaml }
+    - { yaml: aibot/engine/aibot-engine-deploy.yaml , dest: /root/manifest/aibot/engine/aibot-engine-deploy.yaml }
+    - { yaml: aibot/cms/aibot-cms-configmap.yaml , dest: /root/manifest/aibot/cms/aibot-cms-configmap.yaml }
+    - { yaml: aibot/cms/aibot-cms-deploy.yaml , dest: /root/manifest/aibot/cms/aibot-cms-deploy.yaml }
+    - { yaml: aibot/cms/aibot-cms-ingress.yaml , dest: /root/manifest/aibot/cms/aibot-cms-ingress.yaml }
+    - { yaml: aibot/chat-ui/aibot-chat-ui-deploy.yaml , dest: /root/manifest/aibot/chat-ui/aibot-chat-ui-deploy.yaml }
+    - { yaml: aibot/chat-ui/aibot-chat-ui-ingress.yaml , dest: /root/manifest/aibot/chat-ui/aibot-chat-ui-ingress.yaml }
+    - { yaml: aibot/chat-ui/aibot-chat-ui-ingress.yaml , dest: /root/manifest/aibot/chat-ui/aibot-chat-ui-ingress.yaml }
+    - { yaml: kube-state-metric/kube-state-deployment.yaml , dest: /root/manifest/oss/monitoring/kube-state-metric/kube-state-deployment.yaml }
+    - { yaml: metrics-agent/metrics-agent-deploy.yaml , dest: /root/manifest/oss/monitoring/metrics-agent/metrics-agent-deploy.yaml }
+    - { yaml: metrics-agent/metrics-agent-ingress.yaml , dest: /root/manifest/oss/monitoring/metrics-agent/metrics-agent-ingress.yaml }
+    - { yaml: metrics-agent/metrics-agent-configmap.yaml , dest: /root/manifest/oss/monitoring/metrics-agent/metrics-agent-configmap.yaml }
+    - { yaml: prometheus/prometheus-deployment.yaml , dest: /root/manifest/oss/monitoring/prometheus/prometheus-deployment.yaml }
+    - { yaml: prometheus/prometheus-grafana.yaml , dest: /root/manifest/oss/monitoring/prometheus/prometheus-grafana.yaml }
+    - { yaml: prometheus/prometheus-ingress.yaml , dest: /root/manifest/oss/monitoring/prometheus/prometheus-ingress.yaml }
+    - { yaml: prometheus/prometheus-node-exporter.yaml , dest: /root/manifest/oss/monitoring/prometheus/prometheus-node-exporter.yaml }
+  tags:
+    - deploy_argocd
+    - git_resource
+
+- name: 4-4-1-1. Change yaml
+  shell: |
+    sed -i 's,REGISTRYIP,{{ REGISTRY_URL }}:{{ REGISTRY_PORT }},g' {{ item.dest }}
+    sed -i 's,HOSTIP,{{ DOMAIN_NAME }},g' {{ item.dest }}
+    sed -i 's,AIBOT_VER,{{ AIBOT_VER }},g' {{ item.dest }}
   with_items:
     - { yaml: chub/agw/chub-agw-config-deploy.yaml , dest: /root/manifest/chub/agw/chub-agw-config-deploy.yaml }
     - { yaml: chub/agw/chub-agw-discovery-deploy.yaml , dest: /root/manifest/chub/agw/chub-agw-discovery-deploy.yaml }
@@ -79,7 +122,7 @@
 
 - name: 4-4-4. Git Connection
   shell: |
-    argocd repo add {{ ARGO_CONNECTED_SCM }}
+    argocd repo add http://{{ ARGO_CONNECTED_SCM }}
   tags:
     - deploy_argocd
     - set_argocd
@@ -88,7 +131,7 @@
 - name: 4-4-5. Deploy C-Hub
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \
@@ -109,7 +152,7 @@
 - name: 4-4-6. Deploy TTS
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \
@@ -126,7 +169,7 @@
 - name: 4-4-7. Deploy STT
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \
@@ -143,7 +186,7 @@
 - name: 4-4-8. Deploy AI Bot
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \
@@ -164,7 +207,7 @@
 - name: 4-4-9. Deploy AMP
   shell: |
     argocd app create {{ item.app }} \
-    --repo {{ ARGO_CONNECTED_SCM }} \
+    --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
     --dest-namespace {{ item.ns }} \

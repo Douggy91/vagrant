@@ -7,7 +7,7 @@
     - set_resource
 
 - name: 4-2-4. git clone manifest repo
-  shell: "git clone {{ ARGO_CONNECTED_SCM }} /root/manifest/"
+  shell: "git clone http://{{ ARGO_CONNECTED_SCM }} /root/manifest/"
   tags:
     - oss_setup
     - set_resource
@@ -15,17 +15,36 @@
 - name: 4-2-5. Copy yaml template"
   template:
     src: "oss_yaml/{{ item.yaml }}"
-    dest: "oss_yaml/{{ item.dest }}"
+    dest: "{{ item.dest }}"
   with_items:
     - { yaml: argocd-values.yaml, dest: /root/manifest/oss/argocd/argocd-values.yaml }
     - { yaml: mariadb-values.yaml, dest: /root/manifest/oss/mariadb/mariadb-values.yaml }
     - { yaml: opensearch-values.yaml, dest: /root/manifest/oss/opensearch/opensearch-values.yaml }
-#    - { yaml: postgresql-values.yaml, dest: /root/manifest/oss/postgresql/postgresql-values.yaml }
     - { yaml: redis-values.yaml, dest: /root/manifest/oss/redis/redis-values.yaml }
     - { yaml: solr-values.yaml, dest: /root/manifest/oss/solr/solr-values.yaml }
     - { yaml: dashboard-ingress.yaml, dest: /root/manifest/oss/opensearch/dashboard-ingress.yaml }
     - { yaml: grafana-ingress.yaml, dest: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml }
     - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
+  tags:
+    - oss_setup
+    - set_resource
+
+- name: 4-2-5. Change yaml template"
+  shell: |
+    sed -i 's,REGISTRYIP,{{ REGISTRY_URL }}:{{ REGISTRY_PORT }},g' {{ item.dest }}
+    sed -i 's,HOSTIP,{{ DOMAIN_NAME }},g' {{ item.dest }}
+  with_items:
+    - { yaml: argocd-values.yaml, dest: /root/manifest/oss/argocd/argocd-values.yaml }
+    - { yaml: mariadb-values.yaml, dest: /root/manifest/oss/mariadb/mariadb-values.yaml }
+    - { yaml: opensearch-values.yaml, dest: /root/manifest/oss/opensearch/opensearch-values.yaml }
+    - { yaml: redis-values.yaml, dest: /root/manifest/oss/redis/redis-values.yaml }
+    - { yaml: solr-values.yaml, dest: /root/manifest/oss/solr/solr-values.yaml }
+    - { yaml: dashboard-ingress.yaml, dest: /root/manifest/oss/opensearch/dashboard-ingress.yaml }
+    - { yaml: grafana-ingress.yaml, dest: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml }
+    - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
+  tags:
+    - oss_setup
+    - set_resource
 
 # Helm에 Nexus에 게시된 Private Helm 저장소를 추가합니다.
 - name: 4-2-6. Set helm repo
@@ -43,7 +62,6 @@
     - { ns: argocd, name: argocd, repo_name: argo-cd, values_file: /root/manifest/oss/argocd/argocd-values.yaml }
     - { ns: db, name: mariadb, repo_name: mariadb, values_file: /root/manifest/oss/mariadb/mariadb-values.yaml }
     - { ns: opensearch, name: opensearch, repo_name: opensearch, values_file: /root/manifest/oss/opensearch/opensearch-values.yaml }
-#    - { ns: db, name: postgresql, repo_name: postgresql, values_file: /root/manifest/oss/postgresql/postgresql-values.yaml }
     - { ns: redis, name: redis, repo_name: redis-cluster, values_file: /root/manifest/oss/redis/redis-values.yaml }
     - { ns: solr, name: solr, repo_name: solr, values_file: /root/manifest/oss/solr/solr-values.yaml }
   tags:
@@ -62,8 +80,6 @@
   shell: "{{ item }}"
   with_items:
     - "helm install rancher aicc/rancher -n cattle-system --set hostname={{ ansible_facts.default_ipv4.address }}.nip.io --set replicas=1 --set bootstrapPassword={{ RANCHER_ADMIN_PASSWORD }}"
-  #   - "helm install rancher-monitoring-crd aicc/rancher-monitoring-crd -n cattle-monitoring-system --version=102.0.1+up40.1.2 --timeout=10m0s"
-  #   - "helm install rancher-monitoring aicc/rancher-monitoring -n cattle-monitoring-system -f /root/manifest/oss/rancher-monitoring/rancher-monitoring-values.yaml --version=102.0.1+up40.1.2 --timeout=10m0s"
     - "kubectl apply -k /root/manifest/oss/solr/ -n solr"
   tags:
     - oss_setup
@@ -74,7 +90,6 @@
   shell: kubectl apply -f {{ item.values_file }} -n {{ item.ns }}
   with_items:
     - { values_file: /root/manifest/oss/opensearch/dashboard-ingress.yaml, ns: opensearch }
-#    - { values_file: /root/manifest/oss/rancher-monitoring/grafana-ingress.yaml, ns: cattle-monitoring-system }
   tags:
     - oss_setup
     - deploy_dashboard

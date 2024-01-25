@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aibot-master-configmap
+  namespace: vas-aibot
+data:
+  ingress_chat_url: "http://chat-ui.HOSTIP.nip.io"

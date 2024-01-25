@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard-ingress
+  namespace: opensearch
+spec:
+  rules:
+  - host: "dashboard.HOSTIP.nip.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: opensearch-dashboards
+            port:
+              number: 5601
+  ingressClassName: nginx
+
