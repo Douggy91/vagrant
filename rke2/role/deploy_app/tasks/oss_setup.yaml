@@ -1,18 +1,18 @@
-- name: 4-2-1. Directory setup
+- name: 5-2-1. Directory setup
   file:
     path: "/root/helm_chart"
     state: directory
   tags:
     - oss_setup
-    - set_resource
+    - set_resource_oss
 
-- name: 4-2-4. git clone manifest repo
+- name: 5-2-2. git clone manifest repo
   shell: "git clone http://{{ ARGO_CONNECTED_SCM }} /root/manifest/"
   tags:
     - oss_setup
-    - set_resource
+    - set_resource_oss
 
-- name: 4-2-5. Copy yaml template"
+- name: 5-2-3. Copy yaml template"
   template:
     src: "oss_yaml/{{ item.yaml }}"
     dest: "{{ item.dest }}"
@@ -27,9 +27,9 @@
     - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
   tags:
     - oss_setup
-    - set_resource
+    - set_resource_oss
 
-- name: 4-2-5. Change yaml template"
+- name: 5-2-4. Change yaml template"
   shell: |
     sed -i 's,REGISTRYIP,{{ REGISTRY_URL }}:{{ REGISTRY_PORT }},g' {{ item.dest }}
     sed -i 's,HOSTIP,{{ DOMAIN_NAME }},g' {{ item.dest }}
@@ -44,20 +44,20 @@
     - { yaml: custom-values.yaml, dest: /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml }
   tags:
     - oss_setup
-    - set_resource
+    - set_resource_oss
 
 # Helm에 Nexus에 게시된 Private Helm 저장소를 추가합니다.
-- name: 4-2-6. Set helm repo
+- name: 5-2-5. Set helm repo
   shell: |
-    helm repo add aicc http://{{ REGISTRY_URL }}:{{ HELM_PORT }}/repository/helm-hosted
+    /usr/lcoal/bin/helm repo add aicc http://{{ REGISTRY_URL }}:{{ HELM_PORT }}/repository/helm-hosted
     sed -i 's/HOSTIP/{{ ansible_facts.default_ipv4.address }}/g' /root/manifest/oss/argocd/argocd-values.yaml
   tags:
     - oss_setup
     - set_helm
 
 # 오픈소스 앱들 중 DB 역할을 하는 어플리케이션들을 배포합니다.
-- name: 4-2-7. OpenSource Deploy
-  shell: helm install {{ item.name }} aicc/{{ item.repo_name }} -n {{ item.ns }} --create-namespace -f {{ item.values_file }} --timeout=10m0s
+- name: 5-2-6. OpenSource Deploy
+  shell: /usr/lcoal/bin/helm install {{ item.name }} aicc/{{ item.repo_name }} -n {{ item.ns }} --create-namespace -f {{ item.values_file }} --timeout=10m0s
   with_items:
     - { ns: argocd, name: argocd, repo_name: argo-cd, values_file: /root/manifest/oss/argocd/argocd-values.yaml }
     - { ns: db, name: mariadb, repo_name: mariadb, values_file: /root/manifest/oss/mariadb/mariadb-values.yaml }
@@ -69,25 +69,25 @@
     - deploy_db
 
 # 외부 서비스에 대한 모니터링을 돕는 하는 BlackBox exporter를 배포합니다.
-- name: 4-2-8. blackbox exporter
-  shell: helm install blackbox-exporter aicc/prometheus-blackbox-exporter -n cattle-monitoring-system --create-namespace --set image.registry="{{ REGISTRY_URL }}:5000" --set image.repository="third-party/prom/blackbox-exporter" --set image.tags="v0.24.0"
+- name: 5-2-7. blackbox exporter
+  shell: /usr/lcoal/bin/helm install blackbox-exporter aicc/prometheus-blackbox-exporter -n cattle-monitoring-system --create-namespace --set image.registry="{{ REGISTRY_URL }}:5000" --set image.repository="third-party/prom/blackbox-exporter" --set image.tags="v0.24.0"
   tags:
     - oss_setup
     - monitoring
 
 # K8S Management 도구인 랜처와 텍스트 데이터 수집 역할을 하는 Solr를 배포합니다.
-- name: 4-2-9. Rancher & Monitoring & Solr Deploy
+- name: 5-2-8. Rancher & Monitoring & Solr Deploy
   shell: "{{ item }}"
   with_items:
-    - "helm install rancher aicc/rancher -n cattle-system --set hostname={{ ansible_facts.default_ipv4.address }}.nip.io --set replicas=1 --set bootstrapPassword={{ RANCHER_ADMIN_PASSWORD }}"
-    - "kubectl apply -k /root/manifest/oss/solr/ -n solr"
+    - "/usr/lcoal/bin/helm install rancher aicc/rancher -n cattle-system --set hostname={{ ansible_facts.default_ipv4.address }}.nip.io --set replicas=1 --set bootstrapPassword={{ RANCHER_ADMIN_PASSWORD }}"
+    - "/var/lib/rancher/rke2/bin/kubectl apply -k /root/manifest/oss/solr/ -n solr"
   tags:
     - oss_setup
     - monitoring
 
 # K8S Opensearch와 Grafana Dashboard를 배포합니다.
-- name: 4-2-10. Dashboards Deploy
-  shell: kubectl apply -f {{ item.values_file }} -n {{ item.ns }}
+- name: 5-2-9. Dashboards Deploy
+  shell: /var/lib/rancher/rke2/bin/kubectl apply -f {{ item.values_file }} -n {{ item.ns }}
   with_items:
     - { values_file: /root/manifest/oss/opensearch/dashboard-ingress.yaml, ns: opensearch }
   tags:

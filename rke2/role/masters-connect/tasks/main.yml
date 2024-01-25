@@ -4,10 +4,7 @@
   include_tasks: master_connect.yaml
   tags: 
     - masters-connect
-    - system-params
-    - resource-copy
-    - resource-install
-    - network-config
-    - rke2-init
-    - config-kubeconfig
-    - config-kubetools
+    - system-params-connect
+    - rke2-init-connect
+    - config-kubeconfig-connect
+

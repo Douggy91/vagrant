@@ -1,3 +1,5 @@
+# 사용할 USER
+USER: 
 # Aibot 이미지 버전
 AIBOT_VER: "0.1.19"
 # INSTALL RESOURCE 위치
@@ -10,7 +12,7 @@ INTERVAL: 10
 START_TIME: $(date +%s)
 DELAY: 0.1
 # ARGOCD 연동 정보
-CLUSTER_IP: "https://kubernetes.default.svc" #추후 수정 예정
+CLUSTER_IP: "https://kubernetes.default.svc" 
 ARGO_USER: "admin"
 ARGO_PASSWORD: "admin12341234"
 ARGO_CONNECTED_SCM: "{{ GITEA_URL }}:{{ GITEA_PORT}}/gitea/manifest.git"

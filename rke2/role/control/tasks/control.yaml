@@ -76,13 +76,13 @@
     - nginx-setting
 
 # Install Docker Compose
-- name: 0-3-2. Create a symbolic link for the existing Docker CLI
+- name: 0-3-1. Create a symbolic link for the existing Docker CLI
   shell: mkdir -p ~/.docker/cli-plugins
   tags:
     - control
     - docker
 
-- name: 0-3-3. copy docker-compose binary
+- name: 0-3-2. copy docker-compose binary
   copy:
     src: "{{ LOCAL_PATH.PACKAGES }}/docker/docker-compose"
     dest: /root/.docker/cli-plugins/docker-compose
@@ -90,13 +90,13 @@
     - control
     - docker     
 
-- name: 0-3-4. chmod + X
+- name: 0-3-3. chmod + X
   shell: chmod +x ~/.docker/cli-plugins/docker-compose
   tags:
     - control
     - docker     
 
-- name: 0-3-5. Verify the installation
+- name: 0-3-4. Verify the installation
   shell: |
     echo "Installation completed. Verifying..."
     docker compose version
@@ -104,7 +104,7 @@
     - control
     - docker    
 
-- name: 0-3-6. docker daemon.json
+- name: 0-3-5. docker daemon.json
   copy:
     dest: /etc/docker/daemon.json
     content: |
@@ -115,7 +115,7 @@
     - control
     - docker 
 
-- name: 0-3-7. docker daemon.json
+- name: 0-3-6. docker daemon.json
   copy:
     dest: /root/.docker/config.json
     content: |
@@ -130,7 +130,7 @@
     - control
     - docker    
 
-- name: 0-3-8. systemctl enable docker-service
+- name: 0-3-7. systemctl enable docker-service
   systemd_service:
     name: docker
     state: restarted
@@ -139,7 +139,7 @@
     - control
     - docker    
 
-- name: 0-3-9. delay time
+- name: 0-3-8. delay time
   shell: |
     sleep 120s
   tags:
@@ -238,3 +238,12 @@
   tags:
     - control
     - gitea      
+
+- name: 0-5-4. make directory
+  file:
+    path: "{{ LOCAL_PATH.BASE }}/node-token"
+    state: directory
+    mode: 0777
+  tags:
+    - control
+    - kube        

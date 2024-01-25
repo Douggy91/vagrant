@@ -1,21 +1,21 @@
-- name: 4-5-2. deploy opentelemetry-operator
-  shell: kubectl apply -f  /root/manifest/e2e-install/src/opentelemetry-operator.yaml
+- name: 5-5-1. deploy opentelemetry-operator
+  shell: /var/lib/rancher/rke2/bin/kubectl apply -f  /root/manifest/e2e-install/src/opentelemetry-operator.yaml
   tags:
     - deploy_monitoring
     - otel-operator
     
-- name: 4-5-3. deploy fluent-bit
+- name: 5-5-2. deploy fluent-bit
   shell: | 
-    helm install fluent-bit http://{{ REGISTRY_URL }}:{{ HELM_PORT }}/repository/helm-hosted/bitnami-fluent-bit-0.6.3.tgz \
+    /usr/lcoal/bin/helm install fluent-bit http://{{ REGISTRY_URL }}:{{ HELM_PORT }}/repository/helm-hosted/bitnami-fluent-bit-0.6.3.tgz \
     -f /root/manifest/oss/fluent-bit/daemonset/custom-values.yaml \
     -n opensearch
   tags:
     - deploy_monitoring
     - fluent-bit
 
-- name: 4-5-4. deploy monitoring vas-chub
+- name: 5-5-3. deploy monitoring vas-chub
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
@@ -33,9 +33,9 @@
     - deploy_monitoring
     - vas-chub
 
-- name: 4-5-5. deploy monitoring k8s
+- name: 5-5-4. deploy monitoring k8s
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \

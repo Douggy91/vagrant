@@ -12,7 +12,7 @@
   include_tasks: oss_setup.yaml
   tags: 
     - oss_setup
-    - set_resource
+    - set_resource_oss
     - set_helm
     - deploy_db
     - monitoring
@@ -30,7 +30,7 @@
   include_tasks: deploy_argocd.yaml
   tags: 
     - deploy_argocd
-    - get_resource
+    - get_resource_argocd
     - git_resource
     - set_argocd
     - deploy_chub

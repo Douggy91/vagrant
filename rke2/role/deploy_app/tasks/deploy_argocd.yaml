@@ -1,12 +1,12 @@
-- name: 4-4-1. Copy argocd binary
+- name: 5-4-1. Copy argocd binary
   copy: 
     src: "{{ LOCAL_PATH.PACKAGES }}/argocd"
     dest: /usr/local/bin/argocd
   tags:
     - deploy_argocd
-    - get_resource
+    - get_resource_argocd
 
-- name: 4-4-1-1. Copy yaml
+- name: 5-4-2. Copy yaml
   template:
     src:  "argocd_yaml/{{ item.yaml }}"
     dest: "{{ item.dest }}"
@@ -48,7 +48,7 @@
     - deploy_argocd
     - git_resource
 
-- name: 4-4-1-1. Change yaml
+- name: 5-4-3. Change yaml
   shell: |
     sed -i 's,REGISTRYIP,{{ REGISTRY_URL }}:{{ REGISTRY_PORT }},g' {{ item.dest }}
     sed -i 's,HOSTIP,{{ DOMAIN_NAME }},g' {{ item.dest }}
@@ -91,20 +91,21 @@
     - deploy_argocd
     - git_resource
     
-- name: 4-4-1-2. git commit
+- name: 5-4-4. git commit
   shell: git commit -am "update env on yamls"
   tags:
     - deploy_argocd
     - git_resource
 
-- name: 4-4-1-3. git push
+- name: 5-4-5. git push
   shell: |
-    git push http://{{ GITEA_USER }}:{{ GITEA_PASSWD }}@{{ GITEA_URL }}/gitea/manifest.git
+    git push -f http://{{ GITEA_USER }}:{{ GITEA_PASSWD }}@{{ GITEA_URL }}/gitea/manifest.git
   tags:
     - deploy_argocd
     - git_resource
+
 # ArgoCD CLI Change Permissions
-- name: 4-4-2. Change file permissions
+- name: 5-4-6. Change file permissions
   file:
     path: /usr/local/bin/argocd
     mode: '0755'
@@ -113,24 +114,24 @@
     - set_argocd
 
 # TODO: username, password 설정
-- name: 4-4-3. ArgoCD
+- name: 5-4-6. ArgoCD
   shell: |
-    argocd login argocd.{{ ansible_facts.default_ipv4.address }}.nip.io --username {{ ARGO_USER }} --password {{ ARGO_PASSWORD }} --insecure
+    /usr/local/bin/argocd login argocd.{{ ansible_facts.default_ipv4.address }}.nip.io --username {{ ARGO_USER }} --password {{ ARGO_PASSWORD }} --insecure
   tags:
     - deploy_argocd
     - set_argocd
 
-- name: 4-4-4. Git Connection
+- name: 5-4-7. Git Connection
   shell: |
-    argocd repo add http://{{ ARGO_CONNECTED_SCM }}
+    /usr/local/bin/argocd repo add http://{{ ARGO_CONNECTED_SCM }}
   tags:
     - deploy_argocd
     - set_argocd
 
 ## C-Hub
-- name: 4-4-5. Deploy C-Hub
+- name: 5-4-8. Deploy C-Hub
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
@@ -149,9 +150,9 @@
     - deploy_chub
 
   ## TTS
-- name: 4-4-6. Deploy TTS
+- name: 5-4-9. Deploy TTS
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
@@ -166,9 +167,9 @@
     - deploy_tts
 
   ## STT
-- name: 4-4-7. Deploy STT
+- name: 5-4-10. Deploy STT
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
@@ -183,9 +184,9 @@
     - deploy_stt
 
   ## Ai Bot
-- name: 4-4-8. Deploy AI Bot
+- name: 5-4-11. Deploy AI Bot
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \
@@ -204,9 +205,9 @@
     - deploy_argocd
     - deploy_aibot
 
-- name: 4-4-9. Deploy AMP
+- name: 5-4-12. Deploy AMP
   shell: |
-    argocd app create {{ item.app }} \
+    /usr/local/bin/argocd app create {{ item.app }} \
     --repo http://{{ ARGO_CONNECTED_SCM }} \
     --path {{ item.path }} \
     --dest-server {{ CLUSTER_IP }} \

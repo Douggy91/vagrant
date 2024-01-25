@@ -1,76 +1,76 @@
-- name: 3-0-1. Copy Kernel Params
+- name: 4-0-1. Copy Kernel Params
   file:
     src: sysctl.conf
     dest: /etc/sysctl.conf
   tags:
     - worker-connect
-    - system-params
+    - system-params-worker
 
-- name: 3-0-2. apply Kernel Params
+- name: 4-0-2. apply Kernel Params
   shell: |
     sysctl -p /etc/sysctl.conf
   tags:
     - worker-connect
-    - system-params
+    - system-params-worker
 
 ## 07_install_configure_rke2
-- name: 3-3-1. Uninstall RKE2
+- name: 4-1-1. Uninstall RKE2
   shell: rke2-uninstall.sh
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
-- name: 3-3-2. Install and set RKE2
+- name: 4-1-2. Install and set RKE2
   shell: INSTALL_RKE2_TYPE=agent INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts INSTALL_RKE2_SYSTEM_DEFAULT_REGISTRY="{{ REGISTRY_URL }}{{ ':' }}5000" sh /root/rke2-artifacts/install.sh
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
 ## 08_configure_registry
-- name: 3-3-3. Create directories(Docker, RKE2, containerd)
+- name: 4-1-3. Create directories(Docker, RKE2, containerd)
   file:
     path: "{{ item.DIR }}"
     state: directory
   with_items: "{{ REGISTRY_CONFIG }}"
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
-- name: 3-3-4. Set private repo for (Docker, RKE2, containerd)
+- name: 4-1-4. Set private repo for (Docker, RKE2, containerd)
   copy:
     dest: "{{ item.DIR }}/{{ item.FILE }}"
     content: "{{ item.CONTENT }}"
   with_items: "{{ REGISTRY_CONFIG }}"
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
 ## 09_configure_server
-- name: 3-3-5. Make necessary directories
+- name: 4-1-5. Make necessary directories
   file:
     path: /etc/rancher/rke2
     state: directory
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
-- name: 3-3-6. copy token
+- name: 4-1-6. copy token
   copy:
     src: "{{ LOCAL_PATH.BASE }}/node-token/token"
     dest: /root/node-token
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
-- name: 3-3-7. Display the cluster token from the file and emphasize it
+- name: 4-1-7. Display the cluster token from the file and emphasize it
   shell: cat /root/node-token
   register: node_token
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
 ##토큰값 받아와서 주입
-- name: 3-3-8. Add the content to the file
+- name: 4-1-8. Add the content to the file
   copy:
     dest: /etc/rancher/rke2/config.yaml
     content: |
@@ -79,9 +79,9 @@
       node-name: {{ inventory_hostname }}
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
-- name: 3-3-9. Enable and start the rke2-agent service
+- name: 4-1-9. Enable and start the rke2-agent service
   systemd_service:
     name: rke2-agent
     state: started
@@ -89,39 +89,40 @@
   register: "check_rke2angent_state"
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
-- name: 3-3-10. Print rke2-agent service status
+- name: 4-1-10. Print rke2-agent service status
   debug:
     msg: "{{ check_rke2angent_state }}"
   tags:
     - worker-connect
-    - rke2-init
+    - rke2-init-worker
 
 ## 10_configure_kube_tools
-- name: 3-4-1. Make log directories
+- name: 4-2-1. Make log directories
   file:
     path: "{{ item }}"
     state: directory
   with_items:
     - /var/log/vas
-    - /root/.kube
+    - $HOME/.kube
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
 
-- name: 3-4-2. Set Up Kubeconfig
+- name: 4-2-2. Set Up Kubeconfig
   copy:
     src: /var/lib/rancher/rke2/agent/kubelet.kubeconfig
-    dest: /root/.kube/config
+    dest: $HOME/.kube/config
     mode: 0600
+    owner: "{{ USER }}"
     remote_src: yes
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
 
 ## 11_install_configure tools
-- name: 3-4-3. Copy configuration tool files
+- name: 4-2-3. Copy configuration tool files
   copy:
     src: "{{ item.SRC }}"
     dest: "/usr/local/bin/{{ item.DEST }}"
@@ -130,20 +131,20 @@
   with_items: "{{ CONFIG_TOOL_FILES_W }}"
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
 
-- name: 3-4-5. Enable iscsid
+- name: 4-2-4. Enable iscsid
   systemd_service:
     name: iscsid
     state: started
     enabled: true
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
 
-- name: 3-4-6. configuration environment
+- name: 4-2-5. configuration environment
   lineinfile:
-    path: /root/.bashrc
+    path: $HOME/.bashrc
     line: "{{ item }}"
   with_items:
     - "export PATH=$PATH:/var/lib/rancher/rke2/bin:/usr/local/bin"
@@ -151,18 +152,18 @@
     - "alias k=kubectl"
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
 
-- name: 3-4-7. Source bashrc
-  shell: source /root/.bashrc
+- name: 4-2-6. Source bashrc
+  shell: source $HOME/.bashrc
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
 
 ## 12 label node
-- name: 3-4-8. set hostname
+- name: 4-2-7. set hostname
   hostname: 
     name: "{{ inventory_hostname }}"
   tags:
     - worker-connect
-    - config-kubeconfig
+    - config-kubeconfig-worker
