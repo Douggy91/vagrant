@@ -17,64 +17,31 @@ for PACKAGE in "${ANSIBLE_PACKAGES[@]}"; do
 done
 
 
-ADT=$(ip addr | grep -w inet | cut -d ' ' -f 12 | egrep 'e.*0')
-HOSTIP=$(ip addr | grep $ADT | grep inet |  awk 'NR==1 { print $2 }' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+read -p "NIC_NAME : " NIC_NAME
+HOSTIP=$(ip addr | grep -w inet | grep -E "$NIC_NAME" | awk '{print $2}' | cut -d '/' -f 1)
 echo $HOSTIP
 
-echo -e "127.0.0.1       localhost
-$HOSTIP rke2-install-node
-" > /etc/hosts
-rm -rf /etc/hosts
-rm -rf /etc/ansible/hosts
+echo -e "127.0.0.1       localhost\n$HOSTIP rke2-control-node01" > /etc/hosts;
+echo -e "control:\n  hosts:\n    rke2-control-node01:\n" >> /etc/ansible/hosts;
 
-echo "[masters-init]" > /etc/ansible/hosts
-
-read -p "if using multi controlplane, (y/n) : " multi_control_enable
-case $multi_control_enable in
-  "y")
-    read -p "please input 3 controlplane ip : " CON_IP
-    CON_IP="${CON_IP// /}"
-    IFS=',' read -ra CON_IP_ARRAY <<< "$CON_IP"
-    echo -e "${CON_IP_ARRAY[0]} rke2-master-node01" >> /etc/hosts;
-    echo "rke2-master-node01" >> /etc/ansible/hosts;
-    echo -e "\n[masters-connect]" >> /etc/ansible/hosts;
-    echo -e "${CON_IP_ARRAY[1]} rke2-master-node02" >> /etc/hosts;
-    echo "rke2-master-node02" >> /etc/ansible/hosts;
-    echo -e "${CON_IP_ARRAY[2]} rke2-master-node03" >> /etc/hosts;
-    echo "rke2-master-node03" >> /etc/ansible/hosts;
-    read -p "input control ip : " BAS_IP
-    echo -e "\n[control]" >> /etc/ansible/hosts;
-    echo "$BAS_IP rke2-control-node01" >> /etc/hosts;
-    echo "rke2-control-node01" >> /etc/ansible/hosts;
-    ;;
-  "n")
-    read -p "plese input controlplane ip : " CON_IP
-    echo "$CON_IP rke2-master-node01" >> /etc/hosts;
-    echo "rke2-master-node01" >> /etc/ansible/hosts;
-  *)
-    echo "please right answer"
-    ;;
-esac
+read -p "please input 3 controlplane ip : " CON_IP
+CON_IP="${CON_IP// /}"
+IFS=',' read -ra CON_IP_ARRAY <<< "$CON_IP"
+echo -e "${CON_IP_ARRAY[0]} rke2-master-node01" >> /etc/hosts;
+echo -e "${CON_IP_ARRAY[1]} rke2-master-node02" >> /etc/hosts;
+echo -e "${CON_IP_ARRAY[2]} rke2-master-node03" >> /etc/hosts;
+echo -e "k8s-cluster:\n  children:\n    masters-init:\n      hosts:\n        rke2-master-node01:" >> /etc/ansible/hosts;
+echo -e "    masters-connect:\n      hosts:\n        rke2-master-node02:\n        rke2-master-node03:" >> /etc/ansible/hosts;
 
 
-echo -e "\n[workers]" >> /etc/ansible/hosts
+echo -e "    workers:\n      hosts:" >> /etc/ansible/hosts
 read -p "input worker ip : " WOK_IP
 WOK_IP="${WOK_IP// /}"
 IFS=',' read -ra WOK_IP_ARRAY <<< "$WOK_IP"
 n="1"
 for IP in "${WOK_IP_ARRAY[@]}";
   do echo -e "$IP rke2-worker-node0${n}" >> /etc/hosts;
-  echo -e "rke2-worker-node0${n}" >> /etc/ansible/hosts;
-  ((n+=1))
-done
-
-read -p "input dbnode ip : " DB_IP
-DB_IP="${DB_IP// /}"
-IFS=',' read -ra DB_IP_ARRAY <<< "$DB_IP"
-n="1"
-for IP in "${WOK_IP_ARRAY[@]}";
-  do echo -e "$IP rke2-worker-node0${n}" >> /etc/hosts;
-  echo -e "rke2-worker-node0${n}" >> /etc/ansible/hosts;
+  echo -e "        rke2-worker-node0${n}" >> /etc/ansible/hosts;
   ((n+=1))
 done
 
@@ -83,7 +50,7 @@ DB_IP="${DB_IP// /}"
 IFS=',' read -ra DB_IP_ARRAY <<< "$DB_IP"
 n="1"
 for IP in "${DB_IP_ARRAY[@]}";
-  do echo "$IP rke2-db-node0${n}" >> /etc/hosts;
-  echo "rke2-db-node0${n}" >> /etc/ansible/hosts;
+  do echo -e "$IP rke2-db-node0${n}" >> /etc/hosts;
+  echo -e "        rke2-db-node0${n}" >> /etc/ansible/hosts;
   ((n+=1))
 done
