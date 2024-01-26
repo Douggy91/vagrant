@@ -35,8 +35,8 @@ NEXUS_DIR:
 NEXUS_CERT_FILE: "{{ NEXUS_DIR }}/cert.pem"
 NEXUS_KEY_FILE: "{{ NEXUS_DIR )}}/key.pem"
 DOCKER_CONFIG: /etc/docker/daemon.json
-# 단일 컨트롤 노드 시, MASTER
-MASTER_NODE_IP: 
+# HOST_IP
+DOMAIN_NAME: 
 #S3_PATH_BASE: "s3{{ ':' }}//s3-onebox-test-01-repository-01"
 NET_CONF_DIR: /etc/NetworkManager/conf.d
 NET_CONF_FILE: "{{ NET_CONF_DIR }}/rke2-canal.conf"

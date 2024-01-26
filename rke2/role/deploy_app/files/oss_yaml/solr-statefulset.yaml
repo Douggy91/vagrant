@@ -1,0 +1,189 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: solr-headless
+  namespace: solr
+  labels:
+    app: solr-app
+spec:
+  clusterIP: None
+  selector:
+    app: solr-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: solr
+  namespace: solr
+  labels:
+    app: solr-app
+spec:
+  ports:
+  - protocol: TCP
+    port: 8983
+    targetPort: 8983
+  type: ClusterIP
+  selector:
+    app: solr-app
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: solr-cluster-config
+  namespace: solr
+data:
+  solrHome: "/store/data"
+  solrPort: "8983"
+  zkHost: "solr-zookeeper-0.solr-zookeeper-headless.solr.svc.cluster.local:2181,solr-zookeeper-1.solr-zookeeper-headless.solr.svc.cluster.local:2181,solr-zookeeper-2.solr-zookeeper-headless.solr.svc.cluster.local:2181"
+  solrLogsDir: "/store/logs"
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: solr
+  namespace: solr
+spec:
+  selector:
+    matchLabels:
+      app: solr-app 
+  serviceName: "solr-headless"
+  replicas: 3 
+  template:
+    metadata:
+      labels:
+        app: solr-app 
+    spec:
+      tolerations:
+        - key: "oss"
+          value: "true"
+          operator: "Equal"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "solr"
+                operator: In
+                values:
+                - "true"
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+      containers:
+      - name: solr
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        image: "REGISTRYIP/third-party/aibot-solr:0.0.1"
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          tcpSocket:
+            port: 8983
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8983
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        volumeMounts:
+        - name: volsolr
+          mountPath: /store
+        - name: solr-in-sh-cm
+          mountPath: /opt/solr/bin/solr.in.sh
+          readOnly: false
+          subPath: solr.in.sh  
+        ports:
+        - name: solrport
+          containerPort: 8983
+        env:
+          - name: POD_HOST_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: SOLR_HOST
+            value: "$(POD_HOST_NAME).solr-headless.solr.svc.cluster.local"
+          - name: SOLR_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: solrPort
+          - name: ZK_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: zkHost
+          - name: SOLR_LOGS_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: solrLogsDir
+          - name: SOLR_HOME
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: solrHome
+      volumes:
+        - name: solr-in-sh-cm
+          configMap:
+            defaultMode: 0755
+            name: solr-in-sh-cm
+      initContainers:
+      - name: init-solr-data
+        image: "REGISTRYIP/third-party/busybox:latest"
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "if [ ! -d $SOLR_HOME/lib ] ; then mkdir -p $SOLR_HOME/lib && chown -R 8983:8983 $SOLR_HOME ; else true; fi"
+        env:
+          - name: SOLR_HOME
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: solrHome
+        volumeMounts:
+        - name: volsolr
+          mountPath: /store
+      - name: init-solr-logs
+        image: "REGISTRYIP/third-party/busybox:latest"
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "if [ ! -d $SOLR_LOGS_DIR ] ; then mkdir -p $SOLR_LOGS_DIR && chown 8983:8983 $SOLR_LOGS_DIR ; else true; fi"
+        env:
+          - name: SOLR_LOGS_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: solrLogsDir
+        volumeMounts:
+        - name: volsolr
+          mountPath: /store
+      - name: init-solr-xml
+        image: REGISTRYIP/third-party/aibot-solr:0.0.1
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "if [ ! -f $SOLR_HOME/solr.xml ] ; then cp /opt/solr/server/solr/solr.xml $SOLR_HOME/solr.xml;\
+               sed -i \"s/<solr>/<solr><str name='sharedLib'>\\/store\\/data\\/lib<\\/str>/g\" $SOLR_HOME/solr.xml ; else true; fi "
+        env:
+          - name: SOLR_HOME
+            valueFrom:
+              configMapKeyRef:
+                name: solr-cluster-config
+                key: solrHome
+        volumeMounts:
+        - name: volsolr
+          mountPath: /store
+  volumeClaimTemplates:
+  - metadata:
+      name: volsolr
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      resources:
+        requests:
+          storage: 10Gi
