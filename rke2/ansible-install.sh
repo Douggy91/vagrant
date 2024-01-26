@@ -41,7 +41,7 @@ IFS=',' read -ra WOK_IP_ARRAY <<< "$WOK_IP"
 n="1"
 for IP in "${WOK_IP_ARRAY[@]}";
   do echo -e "$IP rke2-worker-node0${n}" >> /etc/hosts;
-  echo -e "        rke2-worker-node0${n}" >> /etc/ansible/hosts;
+  echo -e "        rke2-worker-node0${n}:" >> /etc/ansible/hosts;
   ((n+=1))
 done
 
@@ -51,6 +51,6 @@ IFS=',' read -ra DB_IP_ARRAY <<< "$DB_IP"
 n="1"
 for IP in "${DB_IP_ARRAY[@]}";
   do echo -e "$IP rke2-db-node0${n}" >> /etc/hosts;
-  echo -e "        rke2-db-node0${n}" >> /etc/ansible/hosts;
+  echo -e "        rke2-db-node0${n}:" >> /etc/ansible/hosts;
   ((n+=1))
 done
