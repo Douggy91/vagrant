@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: solr-ingress
+  namespace: solr
+spec:
+  rules:
+  - host: "solr.HOSTIP.nip.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: solr
+            port:
+              number: 8983
+  ingressClassName: nginx

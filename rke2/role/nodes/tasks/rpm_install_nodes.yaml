@@ -204,19 +204,19 @@
     - masters_init
     - network-config   
 
-- name: 1-7-2. Telnet configuration and install
+- name: 1-4-1. Telnet configuration and install
   shell: "{{ item }}"
   args:
     chdir: "{{ LOCAL_PATH.PACKAGES }}/default/inetutils-2.4/"
   with_items:
     - "./configure --prefix=/usr/local"
     - make
-    - sudo make install
+    - config-kubetools
   tags:
     - masters_init
     - config-kubetools
   
-- name: 1-7-3. Install longhorn deps
+- name: 1-4-2. Install longhorn deps
   dnf:
     name: "{{ item }}"
     state: present
@@ -228,7 +228,7 @@
     - config-kubetools
 
 # DB 배포에 필요한 .sql .bak 파일을 마스터 노드로 전달합니다.
-- name: 4-2-2. Download MariaDB client, Dump, DB Schema file
+- name: 1-4-3. Download MariaDB client, Dump, DB Schema file
   copy:
     src: "{{ item.src}}" 
     dest: "{{ item.dest }}"
@@ -236,11 +236,11 @@
     - { src: "{{ LOCAL_PATH.BASE }}/db/mariadb_client", dest: /root/ }
     - { src: /root/ansible/git-core-2.39.3-1.el8_8.x86_64.rpm, dest: /root/git-core-2.39.3-1.el8_8.x86_64.rpm }
   tags:
-    - oss_setup
-    - set_resource
+    - masters_init
+    - config-kubetools
 
   # Pod 접근없이 mariaDB를 핸들링 할 수 있도록 Client 명령어들을 설치합니다.
-- name: 4-2-3. Install MariaDB client in private
+- name: 1-4-4. Install MariaDB client in private
   dnf:
     name: "{{ item }}"
     state: present
@@ -251,5 +251,5 @@
     - "/root/mariadb_client/MariaDB-client-10.6.10-1.el8.x86_64.rpm, /root/mariadb_client/MariaDB-common-10.6.10-1.el8.x86_64.rpm, /root/mariadb_client/MariaDB-shared-10.6.10-1.el8.x86_64.rpm"
     - "/root/git-core-2.39.3-1.el8_8.x86_64.rpm"
   tags:
-    - oss_setup
-    - set_resource
+    - masters_init
+    - config-kubetools

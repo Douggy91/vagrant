@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: aibot-scheduler-configmap
-  namespace: vas-aibot
-data:
-  test: test
-  redis_url: redis-cluster0.redis-cluster.redis.svc.cluster.local:6379,redis-cluster1.redis-cluster.redis.svc.cluster.local:6379,redis-cluster2.redis-cluster.redis.svc.cluster.local:6379
-  db_url: jdbc://postgresql://10.71.163.145:5432/aicc_chatdb

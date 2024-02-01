@@ -1,0 +1,68 @@
+image:
+  registry: "REGISTRYIP"
+  repository: bitnami/fluent-bit
+  tag: 2.2.0-debian-11-r0
+
+daemonset:
+  enabled: true
+
+rbac:
+  create: true
+
+tolerations: 
+  - key: oss
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+  - key: db
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+
+
+config:
+  service: |
+    [SERVICE]
+        Flush        {{ .Values.config.flush }}
+        Daemon       Off
+        LogLevel     {{ .Values.config.logLevel }}
+        Config_Watch On
+        HTTP_Server  On
+        HTTP_Listen  0.0.0.0
+        HTTP_Port    {{ .Values.containerPorts.http }}
+
+
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/redis-*.log,/var/log/containers/solr-*.log,/var/log/containers/zk-*.log,/var/log/containers/opensearch-*.log,/var/log/containers/mariadb-*.log
+        multiline.parser docker, cri
+        Tag kube.*
+        Mem_Buf_Limit 5MB
+
+  filters: |
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+
+  outputs: |
+    [OUTPUT]
+        Name  stdout
+        Match *
+
+    [OUTPUT]
+        name               opensearch
+        match              kube.*
+        host               opensearch-ingest-hl.opensearch.svc.cluster.local
+        port               9200
+        tls                Off
+        tls.verify         Off
+        Suppress_Type_Name On
+        Logstash_Format On
+        logstash_prefix_key kubernetes['container_name']
+        logstash_dateformat %Y%m%d
+        Replace_Dots On

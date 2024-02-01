@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aibot-engine-deployment
+  namespace: vas-aibot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aibot-engine-app
+  template:
+    metadata:
+      labels:
+        app: aibot-engine-app
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+
+      containers:
+      - name: aibot-engine-app
+        image: "REGISTRYIP/vas/aibot/engine:AIBOT_VER"
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi" 
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - name: app-aibot-engine-log-volume
+          mountPath: /data/logs
+        - name: server-aibot-engine-log-volume
+          mountPath: /jb_log
+      - name: aibot-engine-fluent-bit
+        image: "REGISTRYIP/bitnami/fluent-bit:2.2.0"
+        volumeMounts:
+        - name: app-aibot-engine-log-volume
+          mountPath: /data/logs
+        - name: server-aibot-engine-log-volume
+          mountPath: /jb_log
+        - name: aibot-engine-fluentbit-config
+          mountPath: /opt/bitnami/fluent-bit/conf/fluent-bit.conf
+          subPath: fluent-bit.conf
+        - name: aibot-engine-fluentbit-parser
+          mountPath: /opt/bitnami/fluent-bit/conf/aibot-parsers.conf
+          subPath: aibot-parsers.conf
+        - name: aibot-engine-fluentbit-script
+          mountPath: /opt/bitnami/fluent-bit/conf/script.lua
+          subPath: script.lua
+
+      volumes:
+      - name: app-aibot-engine-log-volume
+        emptyDir: {}
+      - name: server-aibot-engine-log-volume
+        emptyDir: {}
+      - name: aibot-engine-fluentbit-config
+        configMap:
+          name: aibot-engine-fluentbit-configmap
+          items:
+          - key: fluent-bit.conf
+            path: fluent-bit.conf
+      - name: aibot-engine-fluentbit-parser
+        configMap:
+          name: aibot-engine-fluentbit-configmap
+          items:
+          - key: aibot-parsers.conf
+            path: aibot-parsers.conf
+      - name: aibot-engine-fluentbit-script
+        configMap:
+          name: aibot-engine-fluentbit-configmap
+          items:
+          - key: script.lua
+            path: script.lua

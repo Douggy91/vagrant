@@ -2,3 +2,10 @@
 # tasks file for rke2-cluster
 - name: install control 
   include_tasks: rpm_install_nodes.yaml
+  tags:
+    - masters_init
+    - resource-copy
+    - resource-install
+    - network-config
+    - config-kubetools
+

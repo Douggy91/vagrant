@@ -3,11 +3,8 @@
   include_tasks: master_init.yaml
   tags: 
     - masters-init
-    - system-params
-    - resource-copy
-    - resource-install
-    - network-config
+    - system-params-init
     - rke2-init
     - config-kubeconfig
     - prepare-connect
-    - config-kubetools
+    - config-kubetools-init

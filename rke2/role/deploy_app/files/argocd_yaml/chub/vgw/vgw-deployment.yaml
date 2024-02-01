@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+# namespace: vas-chub
+metadata:
+  labels:
+    app: vgw
+  name: vgw
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vgw
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "false"
+        prometheus.io/path: /
+        prometheus.io/port: "9464"
+        prometheus.io/scheme: http
+        prometheus.io/scrape: "true"
+      labels:
+        app: vgw
+    spec:
+      containers:
+      - env:
+        - name: JAVA_TOOL_OPTIONS
+          value: ' -Dserver.port=8080 -Dfile.encoding=UTF-8 -Dotel.service.name=vgw'
+        - name: TZ
+          value: Asia/Seoul
+        image: "REGISTRYIP/vas/vgw/vgw:0.0.1"
+        imagePullPolicy: Always
+        name: vgw
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /app/aicc/VGW/config/config.dev.ini
+          name: vgw-config-dev-ini
+          subPath: config.dev.ini
+        - mountPath: /app/aicc/VGW/config/config.chub.ini
+          name: vgw-config-chub-ini
+          subPath: config.chub.ini
+        - mountPath: /app/aicc/VGW/config/config.prod.ini
+          name: vgw-config-prod-ini
+          subPath: config.prod.ini
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: vgw-config-dev-ini
+        name: vgw-config-dev-ini
+      - configMap:
+          defaultMode: 420
+          name: vgw-config-chub-ini
+        name: vgw-config-chub-ini
+      - configMap:
+          defaultMode: 420
+          name: vgw-config-prod-ini
+        name: vgw-config-prod-ini

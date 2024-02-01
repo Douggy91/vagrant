@@ -1,0 +1,283 @@
+global:
+  imageRegistry: "192.168.56.1:5443"
+  storageClass: "longhorn"
+
+architecture: replication
+
+image:
+<<<<<<< HEAD:rke2/role/deploy_app/templates/oss_yaml/mariadb-values.yaml
+  debug: true
+=======
+  registry: "REGISTRYIP"
+  repository: third-party/mariadb
+  tag: 10.6.10-debian-11-r16
+>>>>>>> 7e637ddc66810b790adb4d9c093a47d55ad8716c:rke2/role/deploy_app/files/oss_yaml/mariadb-values.yaml
+
+auth:
+  rootPassword: "admin12341234"
+  replicationUser: replicator 
+  replicationPassword: "admin12341234"
+primary:
+  configuration: |-
+    [mysqld]
+    socket=/opt/bitnami/mariadb/tmp/mysql.sock
+    tmpdir=/opt/bitnami/mariadb/tmp
+    datadir=/bitnami/mariadb/data
+    plugin_dir=/opt/bitnami/mariadb/plugin
+    basedir=/opt/bitnami/mariadb
+    pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+    port=3306
+    bind-address=*
+    collation-server=utf8_general_ci
+    lower_case_table_names=1
+    default-time-zone = '+9:00'
+    character-set-server=UTF8
+    slow_query_log = 0
+    slow_query_log_file = /opt/bitnami/mariadb/logs/mysql-slow.log
+    long_query_time=10
+    log-error = /opt/bitnami/mariadb/logs/mysql_a.err
+    log-bin = /opt/bitnami/mariadb/logs/mysql-bin
+    binlog_format = row
+    expire_logs_days = 10
+    max_binlog_size = 1024M
+    general_log = 0
+    general_log_file = /opt/bitnami/mariadb/logs/general-log.log
+    lower_case_table_names = 1
+    back_log = 50
+    max_connections = 1500
+    max_connect_errors = 10
+    max_allowed_packet = 16M
+    table_open_cache = 2048
+    max_heap_table_size = 16M
+    sort_buffer_size = 2M
+    read_buffer_size = 2M
+    join_buffer_size = 2M
+    read_rnd_buffer_size = 4M
+    thread_cache_size = 8
+    explicit_defaults_for_timestamp
+    tmp_table_size = 16M
+    skip-name-resolve
+    skip-external-locking
+    wait_timeout = 60
+    interactive_timeout = 60
+    query_cache_type=off
+    query_cache_size = 0M
+    query_cache_limit = 0M
+    default-storage-engine = innodb
+    server-id = 1
+    key_buffer_size = 256M
+    bulk_insert_buffer_size = 32M
+    myisam_sort_buffer_size = 128M
+    myisam_max_sort_file_size = 512M
+    innodb_buffer_pool_size = 20480M
+    innodb_data_file_path = ibdata1:100M;ibdata2:100M;ibdata3:100M;ibdata4:100M;ibdata5:100M:autoextend:max:1G
+    innodb_file_per_table =1
+    #innodb_data_home_dir = /bitnami/mariadb/data
+    innodb_write_io_threads = 8
+    innodb_read_io_threads = 8
+    innodb_flush_log_at_trx_commit = 1
+    innodb_log_buffer_size = 8M
+    innodb_log_file_size = 100M
+    #innodb_log_group_home_dir= /bitnami/mariadb/data
+    innodb_max_dirty_pages_pct = 90
+    innodb_lock_wait_timeout = 50
+  readinessProbe:
+    exec:
+      command:
+      - /bin/bash
+      - -ec
+      - |
+        password_aux="${MARIADB_ROOT_PASSWORD:-}"
+        if [[ -f "${MARIADB_ROOT_PASSWORD_FILE:-}" ]]; then
+            password_aux=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
+        fi
+        mysqladmin status -uroot -p"${password_aux}"
+    failureThreshold: 3
+    initialDelaySeconds: 120
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+<<<<<<< HEAD:rke2/role/deploy_app/templates/oss_yaml/mariadb-values.yaml
+
+secondary:
+  configuration: |-
+    [mysqld]
+    socket=/opt/bitnami/mariadb/tmp/mysql.sock
+    tmpdir=/opt/bitnami/mariadb/tmp
+    datadir=/bitnami/mariadb/data
+    plugin_dir=/opt/bitnami/mariadb/plugin
+    basedir=/opt/bitnami/mariadb
+    pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+    port=3306
+    bind-address=*
+    collation-server=utf8_general_ci
+    lower_case_table_names=1
+    default-time-zone = '+9:00'
+    character-set-server=UTF8
+    slow_query_log = 0
+    slow_query_log_file = /opt/bitnami/mariadb/logs/mysql-slow.log
+    long_query_time=10
+    log-error = /opt/bitnami/mariadb/logs/mysql_a.err
+    log-bin = /opt/bitnami/mariadb/logs/mysql-bin
+    binlog_format = row
+    expire_logs_days = 10
+    max_binlog_size = 1024M
+    general_log = 0
+    general_log_file = /opt/bitnami/mariadb/logs/general-log.log
+    lower_case_table_names = 1
+    back_log = 50
+    max_connections = 1500
+    max_connect_errors = 10
+    max_allowed_packet = 16M
+    table_open_cache = 2048
+    max_heap_table_size = 16M
+    sort_buffer_size = 2M
+    read_buffer_size = 2M
+    join_buffer_size = 2M
+    read_rnd_buffer_size = 4M
+    thread_cache_size = 8
+    explicit_defaults_for_timestamp
+    tmp_table_size = 16M
+    skip-name-resolve
+    skip-external-locking
+    wait_timeout = 60
+    interactive_timeout = 60
+    query_cache_type=off
+    query_cache_size = 0M
+    query_cache_limit = 0M
+    default-storage-engine = innodb
+    server-id = 1
+    key_buffer_size = 256M
+    bulk_insert_buffer_size = 32M
+    myisam_sort_buffer_size = 128M
+    myisam_max_sort_file_size = 512M
+    innodb_buffer_pool_size = 20480M
+    innodb_data_file_path = ibdata1:100M;ibdata2:100M;ibdata3:100M;ibdata4:100M;ibdata5:100M:autoextend:max:1G
+    innodb_file_per_table =1
+    #innodb_data_home_dir = /bitnami/mariadb/data
+    innodb_write_io_threads = 8
+    innodb_read_io_threads = 8
+    innodb_flush_log_at_trx_commit = 1
+    innodb_log_buffer_size = 8M
+    innodb_log_file_size = 100M
+    #innodb_log_group_home_dir= /bitnami/mariadb/data
+    innodb_max_dirty_pages_pct = 90
+    innodb_lock_wait_timeout = 50
+  readinessProbe:
+    exec:
+      command:
+      - /bin/bash
+      - -ec
+      - |
+        password_aux="${MARIADB_MASTER_ROOT_PASSWORD:-}"
+        if [[ -f "${MARIADB_MASTER_ROOT_PASSWORD_FILE:-}" ]]; then
+            password_aux=$(cat "$MARIADB_MASTER_ROOT_PASSWORD_FILE")
+        fi
+        mysqladmin status -uroot -p"${password_aux}"
+    failureThreshold: 3
+    initialDelaySeconds: 120
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+
+metrics:
+  enabled: true
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9104"
+  labels:
+    app: "mysqld-exporter"
+  extraArgs:
+    primary: 
+      - --config.my-cnf=/etc/.mysqld_exporter.cnf
+      - --collect.info_schema.tables
+      - --collect.info_schema.innodb_metrics
+      - --collect.global_status
+      - --collect.global_variables
+      - --collect.slave_status
+      - --collect.info_schema.processlist
+      - --collect.perf_schema.tablelocks
+      - --collect.perf_schema.eventsstatements
+      - --collect.perf_schema.eventswaits
+      - --collect.auto_increment.columns
+      - --collect.binlog_size
+      - --collect.perf_schema.tableiowaits
+      - --collect.perf_schema.indexiowaits
+      - --collect.info_schema.userstats
+      - --collect.info_schema.clientstats
+      - --collect.info_schema.tablestats
+      - --collect.info_schema.schemastats
+      - --collect.perf_schema.file_events
+      - --collect.perf_schema.file_instances
+      - --collect.info_schema.innodb_cmp
+      - --collect.info_schema.innodb_cmpmem
+      - --collect.info_schema.query_response_time
+      - --collect.engine_innodb_status
+    secondary: 
+      - --config.my-cnf=/etc/.mysqld_exporter.cnf
+      - --collect.info_schema.tables
+      - --collect.info_schema.innodb_metrics
+      - --collect.global_status
+      - --collect.global_variables
+      - --collect.slave_status
+      - --collect.info_schema.processlist
+      - --collect.perf_schema.tablelocks
+      - --collect.perf_schema.eventsstatements
+      - --collect.perf_schema.eventswaits
+      - --collect.auto_increment.columns
+      - --collect.binlog_size
+      - --collect.perf_schema.tableiowaits
+      - --collect.perf_schema.indexiowaits
+      - --collect.info_schema.userstats
+      - --collect.info_schema.clientstats
+      - --collect.info_schema.tablestats
+      - --collect.info_schema.schemastats
+      - --collect.perf_schema.file_events
+      - --collect.perf_schema.file_instances
+      - --collect.info_schema.innodb_cmp
+      - --collect.info_schema.innodb_cmpmem
+      - --collect.info_schema.query_response_time
+      - --collect.engine_innodb_status
+
+=======
+# metrics:
+#   enabled: "true"
+#   image:
+#     registry: REGISTRYIP
+#     repository: third-party/prom/mysqld-exporter
+#     tag: v0.15.0
+#   annotations:
+#     prometheus.io/scrape: "true"
+#     prometheus.io/port: "9104"
+#   labels:
+#     app: "mysqld-exporter"
+#   extraArgs:
+#     primary: []
+#   extraVolumeMounts:
+#     primary: []
+      # - --config.my-cnf=/etc/.mysqld_exporter.cnf
+      # - --mysqld.address=mariadb.db.svc.cluster.local:3306
+      # - --collect.info_schema.tables
+      # - --collect.info_schema.innodb_metrics
+      # - --collect.global_status
+      # - --collect.global_variables
+      # - --collect.slave_status
+      # - --collect.info_schema.processlist
+      # - --collect.perf_schema.tablelocks
+      # - --collect.perf_schema.eventsstatements
+      # - --collect.perf_schema.eventswaits
+      # - --collect.auto_increment.columns
+      # - --collect.binlog_size
+      # - --collect.perf_schema.tableiowaits
+      # - --collect.perf_schema.indexiowaits
+      # - --collect.info_schema.userstats
+      # - --collect.info_schema.clientstats
+      # - --collect.info_schema.tablestats
+      # - --collect.info_schema.schemastats
+      # - --collect.perf_schema.file_events
+      # - --collect.perf_schema.file_instances
+      # - --collect.info_schema.innodb_cmp
+      # - --collect.info_schema.innodb_cmpmem
+      # - --collect.info_schema.query_response_time
+      # - --collect.engine_innodb_status
+>>>>>>> 7e637ddc66810b790adb4d9c093a47d55ad8716c:rke2/role/deploy_app/files/oss_yaml/mariadb-values.yaml
