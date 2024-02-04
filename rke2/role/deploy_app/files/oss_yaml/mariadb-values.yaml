@@ -1,23 +1,42 @@
 global:
   imageRegistry: "192.168.56.1:5443"
-  storageClass: "longhorn"
+
+#diagnosticMode:
+#  enabled: true
+#  command: 
+#    - sleep
+#  args: 
+#    - infinity
 
 architecture: replication
 
 image:
-<<<<<<< HEAD:rke2/role/deploy_app/templates/oss_yaml/mariadb-values.yaml
   debug: true
-=======
-  registry: "REGISTRYIP"
-  repository: third-party/mariadb
-  tag: 10.6.10-debian-11-r16
->>>>>>> 7e637ddc66810b790adb4d9c093a47d55ad8716c:rke2/role/deploy_app/files/oss_yaml/mariadb-values.yaml
 
 auth:
   rootPassword: "admin12341234"
   replicationUser: replicator 
   replicationPassword: "admin12341234"
+
 primary:
+  podLabels:
+    "db": "primary"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            db: primary
+        topologyKey: "kubernetes.io/hostname"
+  persistence:
+    enabled: false
+    accessModes: 
+      - ReadWriteMany
+# command:
+# - /bin/bash
+# - -ec
+# - |
+#   /opt/bitnami/scripts/mariadb/setup.sh && /opt/bitnami/scripts/mariadb/run.sh
   configuration: |-
     [mysqld]
     socket=/opt/bitnami/mariadb/tmp/mysql.sock
@@ -81,6 +100,12 @@ primary:
     #innodb_log_group_home_dir= /bitnami/mariadb/data
     innodb_max_dirty_pages_pct = 90
     innodb_lock_wait_timeout = 50
+  livenessProbe:
+    initialDelaySeconds: 600
+    failureThreshold: 3
+    periodSeconds: 30
+    successThreshold: 1
+    timeoutSeconds: 1
   readinessProbe:
     exec:
       command:
@@ -92,14 +117,31 @@ primary:
             password_aux=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
         fi
         mysqladmin status -uroot -p"${password_aux}"
+    initialDelaySeconds: 660
     failureThreshold: 3
-    initialDelaySeconds: 120
-    periodSeconds: 10
+    periodSeconds: 30
     successThreshold: 1
     timeoutSeconds: 1
-<<<<<<< HEAD:rke2/role/deploy_app/templates/oss_yaml/mariadb-values.yaml
 
 secondary:
+  podLabels:
+    "db": "secondary"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            db: primary
+        topologyKey: "kubernetes.io/hostname"
+  persistence:
+    enabled: false
+    accessModes: 
+      - ReadWriteMany
+  command:
+  - /bin/bash
+  - -ec
+  - |
+    sleep 240s && /opt/bitnami/scripts/mariadb/setup.sh && /opt/bitnami/scripts/mariadb/run.sh
   configuration: |-
     [mysqld]
     socket=/opt/bitnami/mariadb/tmp/mysql.sock
@@ -163,6 +205,12 @@ secondary:
     #innodb_log_group_home_dir= /bitnami/mariadb/data
     innodb_max_dirty_pages_pct = 90
     innodb_lock_wait_timeout = 50
+  livenessProbe:
+    initialDelaySeconds: 600
+    failureThreshold: 3
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 1
   readinessProbe:
     exec:
       command:
@@ -175,8 +223,8 @@ secondary:
         fi
         mysqladmin status -uroot -p"${password_aux}"
     failureThreshold: 3
-    initialDelaySeconds: 120
-    periodSeconds: 10
+    initialDelaySeconds: 660
+    periodSeconds: 30
     successThreshold: 1
     timeoutSeconds: 1
 
@@ -239,45 +287,4 @@ metrics:
       - --collect.info_schema.query_response_time
       - --collect.engine_innodb_status
 
-=======
-# metrics:
-#   enabled: "true"
-#   image:
-#     registry: REGISTRYIP
-#     repository: third-party/prom/mysqld-exporter
-#     tag: v0.15.0
-#   annotations:
-#     prometheus.io/scrape: "true"
-#     prometheus.io/port: "9104"
-#   labels:
-#     app: "mysqld-exporter"
-#   extraArgs:
-#     primary: []
-#   extraVolumeMounts:
-#     primary: []
-      # - --config.my-cnf=/etc/.mysqld_exporter.cnf
-      # - --mysqld.address=mariadb.db.svc.cluster.local:3306
-      # - --collect.info_schema.tables
-      # - --collect.info_schema.innodb_metrics
-      # - --collect.global_status
-      # - --collect.global_variables
-      # - --collect.slave_status
-      # - --collect.info_schema.processlist
-      # - --collect.perf_schema.tablelocks
-      # - --collect.perf_schema.eventsstatements
-      # - --collect.perf_schema.eventswaits
-      # - --collect.auto_increment.columns
-      # - --collect.binlog_size
-      # - --collect.perf_schema.tableiowaits
-      # - --collect.perf_schema.indexiowaits
-      # - --collect.info_schema.userstats
-      # - --collect.info_schema.clientstats
-      # - --collect.info_schema.tablestats
-      # - --collect.info_schema.schemastats
-      # - --collect.perf_schema.file_events
-      # - --collect.perf_schema.file_instances
-      # - --collect.info_schema.innodb_cmp
-      # - --collect.info_schema.innodb_cmpmem
-      # - --collect.info_schema.query_response_time
-      # - --collect.engine_innodb_status
->>>>>>> 7e637ddc66810b790adb4d9c093a47d55ad8716c:rke2/role/deploy_app/files/oss_yaml/mariadb-values.yaml
+
