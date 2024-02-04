@@ -141,7 +141,7 @@ secondary:
   - /bin/bash
   - -ec
   - |
-    sleep 240s && /opt/bitnami/scripts/mariadb/entrypoint.sh && /opt/bitnami/scripts/mariadb/setup.sh && /opt/bitnami/scripts/mariadb/run.sh
+    sleep 240s && /opt/bitnami/scripts/mariadb/entrypoint.sh;/opt/bitnami/scripts/mariadb/setup.sh;/opt/bitnami/scripts/mariadb/run.sh
   configuration: |-
     [mysqld]
     socket=/opt/bitnami/mariadb/tmp/mysql.sock
