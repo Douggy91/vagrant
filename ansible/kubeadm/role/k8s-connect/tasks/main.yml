@@ -1,0 +1,6 @@
+---
+# tasks file for container-runtimes
+- name: connect kubeadm
+  include_tasks: k8s_cluster_connect.yml  
+  tags: 
+    - k8s_connect

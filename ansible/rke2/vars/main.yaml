@@ -1,0 +1,107 @@
+######### 사용할 USER #########
+USER: "admin"
+
+######### INSTALL RESOURCE 위치 #########
+LOCAL_PATH:
+  BASE: "/home/admin/RESOURCE/resource"
+  PACKAGES: "/home/admin/RESOURCE/resource/packages"
+
+######### ARGOCD 연동 정보 #########
+CLUSTER_IP: "https://kubernetes.default.svc"
+ARGO_USER: "admin"
+ARGO_PASSWORD: "admin12341234"
+ARGO_CONNECTED_SCM: "{{ GITEA_URL }}:{{ GITEA_PORT}}/gitea/manifest.git"
+
+######### 내부 GITEA 연동 #########
+GITEA_USER: "gitea"
+GITEA_PASSWD: "admin12341234"
+GITEA_URL: "192.168.56.110"
+GITEA_PORT: "3000"
+GITEA_DIR: /home/admin/RESOURCE/gitea
+
+######### 컨트롤 노드 연결 부 #########
+CONTROL_NODE_IP: "192.168.56.110"
+
+######### 내부 Nexus Repo #########
+HELM_PORT: "8081"
+REGISTRY_PORT: "5000"
+REGISTRY_URL: "192.168.56.110"
+REGISTRY_ID: "admin"
+REGISTRY_PASSWD: "admin12341234"
+NEXUS_DIR: "/home/admin/RESOURCE/nexus"
+NEXUS_CERT_FILE: "{{ NEXUS_DIR }}/cert.pem"
+NEXUS_KEY_FILE: "{{ NEXUS_DIR )}}/key.pem"
+DOCKER_CONFIG: /etc/docker/daemon.json
+
+######### HOST_IP #########
+DOMAIN_NAME: "151.vas.kt.co.kr"
+
+
+######### DON'T TOUCH #########
+######### MARIA_SHELL DON'T TOUCH #########
+TIMEOUT: 360
+INTERVAL: 10
+START_TIME: $(date +%s)
+DELAY: 0.1
+NET_CONF_DIR: /etc/NetworkManager/conf.d
+NET_CONF_FILE: "{{ NET_CONF_DIR }}/rke2-canal.conf"
+RANCHER_ADMIN_PASSWORD: "admin12341234"
+MARIADB_ROOT_PASSWORD: "admin12341234"
+MYSQL_PASSWORD: "admin12341234"
+## variables for 08_configure_registry
+REGISTRY_CONFIG:
+# Docker
+- DIR: /etc/docker
+  FILE: daemon.json
+  CONTENT: |
+    {
+      "registry-mirrors": ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"],
+      "insecure-registries": ["{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+    }
+- DIR: /etc/rancher/rke2
+  # RKE2
+  FILE: registries.yaml
+  CONTENT: |
+    mirrors:
+      docker.io:
+        endpoint:
+          - "http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
+      quay.io:
+        endpoint:
+          - "http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
+      "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}":
+        endpoint:
+          - "http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"
+    configs:
+      "{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}":
+        auth:
+          username: "{{ REGISTRY_ID }}"
+          password: "{{ REGISTRY_PASSWD }}"
+        tls:
+          insecure_skip_verify: true
+- DIR: /etc/containerd
+  # containerd
+  FILE: config.toml
+  CONTENT: |
+    disabled_plugins = []
+    [plugins."io.containerd.grpc.v1.cri".registry]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+          endpoint = ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
+          endpoint = ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+          endpoint = ["http://{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}"]
+      [plugins."io.containerd.grpc.v1.cri".registry.configs]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}".auth]
+          username = "{{ REGISTRY_ID }}"
+          password = "{{ REGISTRY_PASSWD }}"
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ REGISTRY_URL }}:{{ REGISTRY_PORT }}".tls]
+          insecure_skip_verify = true
+CONFIG_TOOL_FILES_M:
+- {SRC: "{{ LOCAL_PATH.PACKAGES }}/k9s/k9s", DEST: k9s} # k9s
+- {SRC: "{{ LOCAL_PATH.PACKAGES }}/default/jq-linux-amd64", DEST: jq} # jq
+- {SRC: "{{ LOCAL_PATH.PACKAGES }}/helm/linux-amd64/helm", DEST: helm} # helm
+CONFIG_TOOL_FILES_W:
+- {SRC: "{{ LOCAL_PATH.PACKAGES }}/k9s/k9s", DEST: k9s} # k9s
+- {SRC: "{{ LOCAL_PATH.PACKAGES }}/default/jq-linux-amd64", DEST: jq} # jq

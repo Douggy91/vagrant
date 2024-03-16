@@ -1,0 +1,182 @@
+- name: 3-0-1. Copy Kernel Params
+  copy:
+    src: sysctl.conf
+    dest: /etc/sysctl.conf
+  tags:
+    - masters_connect
+    - system-params-connect
+
+- name: 3-0-2. apply Kernel Params
+  shell: |
+    sysctl -p /etc/sysctl.conf
+  tags:
+    - masters_connect
+    - system-params-connect
+## 02_download_resources
+    
+## 07_install_configure_rke2
+- name: 3-1-1. Uninstall RKE2
+  shell: rke2-uninstall.sh
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+- name: 3-1-2. Install and set RKE2
+  shell: INSTALL_RKE2_TYPE=server INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts INSTALL_RKE2_SYSTEM_DEFAULT_REGISTRY="{{ REGISTRY_URL }}{{ ':' }}5000" sh /root/rke2-artifacts/install.sh
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+## 08_configure_registry
+- name: 3-1-3. Create directories(Docker, RKE2, containerd)
+  file:
+    path: "{{ item.DIR }}"
+    state: directory
+  with_items: "{{ REGISTRY_CONFIG }}"
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+- name: 3-1-4. Set private repo for (Docker, RKE2, containerd)
+  copy:
+    dest: "{{ item.DIR }}/{{ item.FILE }}"
+    content: "{{ item.CONTENT }}"
+  with_items: "{{ REGISTRY_CONFIG }}"
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+## 09_configure_server
+- name: 3-1-5. Make necessary directories
+  file:
+    path: /etc/rancher/rke2
+    state: directory
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+- name: 3-1-6. copy token
+  copy:
+    src: "{{ LOCAL_PATH.BASE }}/node-token/token"
+    dest: /root/node-token
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+- name: 3-1-7. Display the cluster token from the file and emphasize it
+  shell: cat /root/node-token
+  register: node_token
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+## 토큰값 받아와서 주입
+- name: 3-1-8. Add the content to the file
+  copy:
+    dest: /etc/rancher/rke2/config.yaml
+    content: |
+      server: https://{{ CONTROL_NODE_IP }}:9345
+      token: {{ node_token.stdout }} #TODO: 클러스터 토큰값 고정
+      node-name: {{ inventory_hostname }}
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+- name: 3-1-9. Enable and start the rke2-server service
+  systemd_service:
+    name: rke2-server
+    state: started
+    enabled: true
+  register: "check_rke2server_state"
+  ignore_errors: true
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+# ansible script를 통해 진행 시, rke2-server start를 재반복해야 정상적으로 연결 (원인불명)
+- name: 3-1-10. retry rke2-server service
+  systemd_service:
+    name: rke2-server
+    state: restarted
+    enabled: true
+  when: check_rke2server_state.failed == True
+  tags:
+    - masters-connect
+    - rke2-init-connect
+
+## 10_configure_kube_tools
+- name: 3-2-1. Make log directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - /var/log/vas
+    - $HOME/.kube
+    - "/home/{{ USER }}/.kube"
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect
+
+- name: 3-2-2. Set Up Kubeconfig
+  copy:
+    src: /etc/rancher/rke2/rke2.yaml
+    dest: "{{ item }}"
+    mode: 0600
+    owner: "{{ USER }}"
+    remote_src: yes
+  with_items:
+    - $HOME/.kube/config
+    - "/home/{{ USER }}/.kube/config"
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect
+    
+## 11_install_configure tools
+- name: 3-2-3. Copy configuration tool files
+  copy:
+    src: "{{ item.SRC }}"
+    dest: "/usr/local/bin/{{ item.DEST }}"
+    mode: +x
+    remote_src: yes
+  with_items: "{{ CONFIG_TOOL_FILES_M }}"
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect
+
+- name: 3-2-4. Enable iscsid
+  systemd_service:
+    name: iscsid
+    state: started
+    enabled: true
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect
+
+- name: 3-2-5. configuration environment
+  lineinfile:
+    path: "{{ item.path }}"
+    line: "{{ item.line }}"
+  with_items:
+    - {path: "$HOME/.bashrc" , line: "export PATH=$PATH:/var/lib/rancher/rke2/bin:/usr/local/bin"}
+    - {path: "$HOME/.bashrc" , line: "export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml"}
+    - {path: "$HOME/.bashrc" , line: "alias k=kubectl"}
+    - {path: "/home/{{ USER }}/.bashrc" , line: "export PATH=$PATH:/var/lib/rancher/rke2/bin:/usr/local/bin"}
+    - {path: "/home/{{ USER }}/.bashrc" , line: "export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml"}
+    - {path: "/home/{{ USER }}/.bashrc" , line: "alias k=kubectl"}
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect
+
+- name: 3-2-6. Source bashrc
+  shell: source $HOME/.bashrc
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect
+
+- name: 3-3-7. set hostname
+  hostname: 
+    name: "{{ inventory_hostname }}"
+  tags:
+    - masters-connect
+    - config-kubeconfig-connect

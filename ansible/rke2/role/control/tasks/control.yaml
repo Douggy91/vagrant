@@ -1,0 +1,264 @@
+- name: 0-2-1. create install nginx config
+  shell: "touch {{ LOCAL_PATH.BASE }}/nginx.conf"
+  tags:
+  - control
+  - nginx-setting
+
+- name: 0-2-2. configure nginx.conf
+  blockinfile:
+    path: "{{ LOCAL_PATH.BASE }}/nginx.conf"
+    block: |
+      load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
+      events {}
+      stream {
+        upstream stream_rke2_9345 {
+          server rke2-master-node01:9345;
+          server rke2-master-node02:9345;
+          server rke2-master-node03:9345;
+        }
+        server {
+          listen 9345;
+          proxy_pass stream_rke2_9345;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
+        }
+        upstream stream_rke2_6443 {
+          server rke2-master-node01:6443;
+          server rke2-master-node02:6443;
+          server rke2-master-node03:6443;
+        }
+        server {
+          listen 6443;
+          proxy_pass stream_rke2_6443;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
+        }
+        upstream stream_rke2_80 {
+          server rke2-master-node01:80;
+          server rke2-master-node02:80;
+          server rke2-master-node03:80;
+        }
+        server {
+          listen 80;
+          proxy_pass stream_rke2_80;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
+        }
+        upstream stream_rke2_443 {
+          server rke2-master-node01:443;
+          server rke2-master-node02:443;
+          server rke2-master-node03:443;
+        }
+        server {
+          listen 443;
+          proxy_pass stream_rke2_443;
+          proxy_timeout 300s;
+          proxy_connect_timeout 1s;
+        }
+      }
+  tags:
+  - control
+  - nginx-setting
+
+- name: 0-2-3. mv config file
+  shell: "mv {{ LOCAL_PATH.BASE }}/nginx.conf /etc/nginx/nginx.conf"
+  tags:
+  - control
+  - nginx-setting
+
+- name: 0-2-4. start nginx
+  systemd:
+    name: nginx.service
+    state: restarted
+    enabled: true
+  tags:
+  - control
+  - nginx-setting
+
+# Install Docker Compose
+- name: 0-3-1. Create a symbolic link for the existing Docker CLI
+  shell: mkdir -p ~/.docker/cli-plugins
+  tags:
+  - control
+  - docker
+
+- name: 0-3-2. copy docker-compose binary
+  copy:
+    src: "{{ LOCAL_PATH.PACKAGES }}/docker/docker-compose"
+    dest: /root/.docker/cli-plugins/docker-compose
+  tags:
+  - control
+  - docker
+
+- name: 0-3-3. chmod + X
+  shell: chmod +x ~/.docker/cli-plugins/docker-compose
+  tags:
+  - control
+  - docker
+
+- name: 0-3-4. Verify the installation
+  shell: |
+    echo "Installation completed. Verifying..."
+    docker compose version
+  tags:
+  - control
+  - docker
+
+- name: 0-3-5. docker daemon.json
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "insecure-registries": ["{{ REGISTRY_URL }}:5000"]
+      }
+  tags:
+  - control
+  - docker
+
+- name: 0-3-6. docker daemon.json
+  copy:
+    dest: /root/.docker/config.json
+    content: |
+      {
+              "auths": {
+                      "{{ REGISTRY_URL }}:5000": {
+                              "auth": "YWRtaW46YWRtaW4xMjM0MTIzNA=="
+                      }
+              }
+      }
+  tags:
+  - control
+  - docker
+
+- name: 0-3-7. systemctl enable docker-service
+  systemd_service:
+    name: docker
+    state: restarted
+    enabled: true
+  tags:
+  - control
+  - docker
+
+- name: 0-4-1. Load Images
+  shell: |
+    docker load -i {{ LOCAL_PATH.PACKAGES }}/docker/sonatype-nexus.tar.gz
+  tags:
+  - control
+  - nexus
+
+- name: 0-4-2. create nexus docker-compose.yml
+  copy:
+    dest: "{{ NEXUS_DIR }}/docker-compose.yml"
+    content: |
+      version: '3.9'
+      services:
+        nexus:
+          image: sonatype/nexus3:3.61.0
+          user: root
+          restart: always
+          ports:
+            - 5000:5000
+            - 8081:8081
+          volumes:
+            - {{ NEXUS_DIR }}/cert.pem:/opt/sonatype/nexus/etc/ssl/cert.pem
+            - {{ NEXUS_DIR }}/key.pem:/opt/sonatype/nexus/etc/ssl/key.pem
+            - {{ NEXUS_DIR }}/data:/opt/sonatype/sonatype-work/nexus3
+          networks:
+            - nexus-net
+          environment:
+            - NEXUS-CONTEXT=/
+      networks:
+        nexus-net:
+          driver: bridge
+  tags:
+  - control
+  - nexus
+
+- name: 0-4-2. run nexus image from docker compose
+  shell: docker compose -f {{ NEXUS_DIR }}/docker-compose.yml up -d
+  tags:
+  - control
+  - nexus
+
+- name: 0-4-3. delay time
+  shell: |
+    sleep 120s
+  tags:
+  - control
+  - nexus
+
+- name: 0-4-4. docker login
+  shell: |
+    docker login {{ REGISTRY_URL }}:5000 --username admin --password admin12341234
+  tags:
+  - control
+  - nexus
+
+- name: 0-5-1. gitea compose yaml create
+  copy:
+    dest: "{{ GITEA_DIR }}/docker-compose.yml"
+    content: |
+      version: '3.9'
+      services:
+        gitea:
+          image: {{ REGISTRY_URL }}:5000/third-party/gitea:1.20
+          ports:
+          - 3000:3000
+          volumes:
+            - {{ GITEA_DIR }}/data:/data
+            - /var/lib/gitea:/var/lib/gitea
+          depends_on:
+            - db
+          restart: always
+        db:
+          image: {{ REGISTRY_URL }}:5000/third-party/mariadb:10.6.10-debian-11-r16
+          ports:
+            - 3306:3306
+          environment:
+          # Database Setup (DB: gitea, ID: {{ GITEA_USER }}, PWD: {{ GITEA_PASSWD }}, ROOT PWD: {{ GITEA_PASSWD }})
+          - MARIADB_ROOT_PASSWORD={{ MYSQL_PASSWORD }}
+          - MARIADB_DATABASE=gitea
+          - MARIADB_USER=admin
+          - MARIADB_PASSWORD={{ MYSQL_PASSWORD }}
+          volumes:
+            - {{ GITEA_DIR }}/mysql:/var/lib/mysql
+            - {{ GITEA_DIR }}/backup.sql:/tmp/backup.sql
+          restart: always
+  tags:
+  - control
+  - gitea
+
+- name: 0-5-2. chmod Docker-compose yml - gitea
+  shell: "chmod +x {{ GITEA_DIR }}/docker-compose.yml"
+  tags:
+  - control
+  - gitea
+
+- name: 0-5-3. Run Gitea, Mariadb from Docker Compose -gitea
+  shell: "docker compose -f {{ GITEA_DIR }}/docker-compose.yml up -d"
+  tags:
+  - control
+  - gitea
+
+- name: 0-5-4. delay time
+  shell: |
+    sleep 480s
+  tags:
+  - control
+  - gitea
+
+- name: 0-5-5. insert gitea restore
+  shell: |
+    docker exec -it gitea-db-1 /bin/bash -c "mysql -uroot -padmin12341234 < /tmp/backup.sql"
+  tags:
+  - control
+  - gitea
+
+- name: 0-5-4. make directory
+  file:
+    path: "{{ LOCAL_PATH.BASE }}/node-token"
+    state: directory
+    mode: 0777
+  tags:
+  - control
+  - kube
