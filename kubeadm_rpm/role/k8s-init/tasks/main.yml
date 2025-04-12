@@ -1,6 +1,0 @@
----
-# tasks file for container-runtimes
-- name: Init kubeadm
-  include_tasks: k8s_cluster_init.yml  
-  tags: 
-    - k8s_init

@@ -1,6 +1,0 @@
----
-# tasks file for container-runtimes
-- name: connect worker
-  include_tasks: k8s_cluster_worker.yml 
-  tags: 
-    - k8s_worker
